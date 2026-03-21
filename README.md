@@ -124,16 +124,16 @@ flutter test
 - 70% opacity surfaces with 28px blur
 - Subtle 0.08 opacity borders
 
-��� **Color Layering**
+��� **Color Layering**
 - Surface (base) → Surface Container Low → High → Highest
 - Tokens define depth without explicit borders
 
-��� **Typography**
+��� **Typography**
 - Epilogue (variable weight) for editorial, expressive headlines
 - Manrope (geometric) for clean body text & labels
 - Bold tracking on labels for Material 3 expressiveness
 
-��� **Animation**
+��� **Animation**
 - Mesh gradient background (15s loop)
 - Album art glow pulse (3s reverse)
 - Equalizer bars in queue (staggered)
@@ -157,5 +157,18 @@ Edit `lib/models/music_models.dart` to add more sample tracks/mixes.
 - Ready to expand with actual music API integration
 
 ---
+
+## 📊 Implementation Status
+
+See [`docs/backlog.md`](docs/backlog.md) for the full visual roadmap and feature tracker.
+
+| Phase | Status |
+|-------|--------|
+| 🏗️ Foundation (screens, design, navigation) | ✅ Complete |
+| ⚙️ Core Engine (playback, MediaStore) | 🔄 In Progress |
+| 💾 Persistence (queue, favorites) | 🔜 Next Up |
+| 🎵 Features (playlists, library diagnostics) | 🔜 Next Up |
+| 🔍 YouTube Streaming | 🔍 Discovery |
+| 🌐 Future (artist pages, recommendations) | 🌐 Planned |
 
 **Status**: Ready to build & run. All lint checks pass. No syntax errors.
