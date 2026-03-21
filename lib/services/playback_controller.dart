@@ -10,6 +10,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/music_models.dart';
 
+enum QueueRepeatMode { none, one, all }
+
 class PlaybackController extends ChangeNotifier {
   PlaybackController._();
   static final PlaybackController instance = PlaybackController._();
@@ -27,6 +29,8 @@ class PlaybackController extends ChangeNotifier {
   PermissionStatus _permissionStatus = PermissionStatus.denied;
   DateTime? _lastScanAt;
   int _currentIndex = -1;
+  QueueRepeatMode _repeatMode = QueueRepeatMode.none;
+  bool _shuffleEnabled = false;
 
   Timer? _persistDebounce;
 
@@ -50,6 +54,8 @@ class PlaybackController extends ChangeNotifier {
       (_currentIndex >= 0 && _currentIndex < _queue.length) ? _queue[_currentIndex] : null;
   Duration get position => _position;
   Duration get duration => _duration;
+  QueueRepeatMode get repeatMode => _repeatMode;
+  bool get shuffleEnabled => _shuffleEnabled;
 
   Future<void> init() async {
     if (_initialized) return;
@@ -207,11 +213,32 @@ class PlaybackController extends ChangeNotifier {
     _schedulePersist();
   }
 
+  void toggleShuffle() {
+    _shuffleEnabled = !_shuffleEnabled;
+    notifyListeners();
+  }
+
+  void cycleRepeat() {
+    _repeatMode = QueueRepeatMode.values[(_repeatMode.index + 1) % QueueRepeatMode.values.length];
+    notifyListeners();
+  }
+
   Future<void> skipNext() async {
     if (_queue.isEmpty) return;
+    if (_shuffleEnabled) {
+      final candidates = List.generate(_queue.length, (i) => i)
+          .where((i) => i != _currentIndex)
+          .toList();
+      if (candidates.isEmpty) return;
+      candidates.shuffle();
+      await playAtIndex(candidates.first);
+      return;
+    }
     final int next = _currentIndex + 1;
     if (next < _queue.length) {
       await playAtIndex(next);
+    } else if (_repeatMode == QueueRepeatMode.all) {
+      await playAtIndex(0);
     }
   }
 
@@ -316,9 +343,21 @@ class PlaybackController extends ChangeNotifier {
   }
 
   Future<void> _handleTrackCompleted() async {
+    if (_repeatMode == QueueRepeatMode.one) {
+      await playAtIndex(_currentIndex);
+      return;
+    }
+    if (_shuffleEnabled) {
+      await skipNext();
+      return;
+    }
     final int next = _currentIndex + 1;
     if (next < _queue.length) {
       await playAtIndex(next);
+      return;
+    }
+    if (_repeatMode == QueueRepeatMode.all) {
+      await playAtIndex(0);
       return;
     }
     await _player.pause();
@@ -339,6 +378,8 @@ class PlaybackController extends ChangeNotifier {
       await prefs.setStringList('queue_ids', _queue.map((t) => t.id).toList());
       await prefs.setString('current_track_id', currentTrack?.id ?? '');
       await prefs.setInt('position_ms', _position.inMilliseconds);
+      await prefs.setInt('repeat_mode', _repeatMode.index);
+      await prefs.setBool('shuffle_enabled', _shuffleEnabled);
     } catch (_) {
       // Keep runtime resilient if persistence fails.
     }
@@ -416,6 +457,9 @@ class PlaybackController extends ChangeNotifier {
       if (posMs > 0) {
         await _player.seek(Duration(milliseconds: posMs));
       }
+      final repeatIdx = prefs.getInt('repeat_mode') ?? 0;
+      _repeatMode = QueueRepeatMode.values[repeatIdx.clamp(0, QueueRepeatMode.values.length - 1)];
+      _shuffleEnabled = prefs.getBool('shuffle_enabled') ?? false;
       notifyListeners();
     } catch (_) {
       // Restore is best-effort.

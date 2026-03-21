@@ -17,8 +17,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
   final PlaybackController _playback = PlaybackController.instance;
 
   bool _isFavorite = false;
-  bool _isShuffle = false;
-  int _repeatMode = 0;
 
   late final AnimationController _meshController;
   late final AnimationController _albumPulseController;
@@ -280,8 +278,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          onPressed: () => setState(() => _isShuffle = !_isShuffle),
-          icon: Icon(Icons.shuffle_rounded, color: _isShuffle ? AppColors.primary : AppColors.onSurfaceVariant),
+          onPressed: _playback.toggleShuffle,
+          icon: Icon(Icons.shuffle_rounded, color: _playback.shuffleEnabled ? AppColors.primary : AppColors.onSurfaceVariant),
         ),
         IconButton(
           onPressed: _playback.skipPrevious,
@@ -310,10 +308,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
           icon: const Icon(Icons.skip_next_rounded, color: AppColors.onSurface),
         ),
         IconButton(
-          onPressed: () => setState(() => _repeatMode = (_repeatMode + 1) % 3),
+          onPressed: _playback.cycleRepeat,
           icon: Icon(
-            _repeatMode == 2 ? Icons.repeat_one_rounded : Icons.repeat_rounded,
-            color: _repeatMode > 0 ? AppColors.primary : AppColors.onSurfaceVariant,
+            _playback.repeatMode == QueueRepeatMode.one ? Icons.repeat_one_rounded : Icons.repeat_rounded,
+            color: _playback.repeatMode != QueueRepeatMode.none ? AppColors.primary : AppColors.onSurfaceVariant,
           ),
         ),
       ],
