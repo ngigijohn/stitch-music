@@ -1,14 +1,26 @@
 # Product Backlog
 
 ## In Progress
-- Playback auto-advance and resume state
-- Library diagnostics panel
+- Playback polish: repeat and shuffle modes
+- Persistence hardening: queue/order/versioned session state
+- Diagnostics UX refinements and actionable permission guidance
 
 ## Next Up
-- Playlist MVP: create, rename, reorder, play playlist
 - Favorites and recents persistence
-- Queue persistence with restore
-- Test backlog implementation
+- Playlist enhancements: rename, add/remove individual tracks, reorder tracks
+- Integration tests for scan -> play -> queue -> playlist flow
+- CI release gates (analyze, tests, debug build)
+
+## Completed
+- Device library scan via Android MediaStore method channel
+- Local playback (play/pause/next/previous/seek)
+- Auto-advance at track completion
+- Queue reorder with playback index safety
+- Session restore for queue/current track/position
+- Library diagnostics panel (permission, last scan, counts)
+- Playlist MVP (create from queue, play, delete, persistence)
+- QA baseline tests (model mapping, theme contract, app shell smoke)
+- Branch workflow and CI scaffolding for parallel agents
 
 ## New Feature Request
 ### Stream Audio from YouTube

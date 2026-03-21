@@ -96,6 +96,55 @@ class Mix {
   });
 }
 
+class Playlist {
+  final String id;
+  final String name;
+  final List<String> trackIds;
+  final DateTime createdAt;
+
+  const Playlist({
+    required this.id,
+    required this.name,
+    required this.trackIds,
+    required this.createdAt,
+  });
+
+  factory Playlist.fromMap(Map<String, dynamic> map) {
+    final rawTrackIds = (map['trackIds'] as List<dynamic>? ?? const <dynamic>[])
+        .map((e) => e.toString())
+        .where((e) => e.isNotEmpty)
+        .toList();
+
+    return Playlist(
+      id: (map['id'] ?? '').toString(),
+      name: (map['name'] ?? 'Untitled Playlist').toString(),
+      trackIds: rawTrackIds,
+      createdAt: DateTime.tryParse((map['createdAt'] ?? '').toString()) ?? DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'trackIds': trackIds,
+      'createdAt': createdAt.toIso8601String(),
+    };
+  }
+
+  Playlist copyWith({
+    String? name,
+    List<String>? trackIds,
+  }) {
+    return Playlist(
+      id: id,
+      name: name ?? this.name,
+      trackIds: trackIds ?? this.trackIds,
+      createdAt: createdAt,
+    );
+  }
+}
+
 // ---------- Sample data ----------
 const List<Track> kQueueTracks = [
   Track(id: '1', title: 'Neon Horizon', artist: 'Stellar Echo', album: 'Midnight Circuits', duration: '4:08', dominantColor: Color(0xFF7C4DFF)),
