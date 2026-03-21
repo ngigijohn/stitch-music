@@ -111,6 +111,64 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         ],
                       ),
                     ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                      child: Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          color: AppColors.surfaceContainerHigh.withValues(alpha: 0.72),
+                          border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.45)),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 42,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: AppColors.primary.withValues(alpha: 0.16),
+                              ),
+                              child: const Icon(Icons.cloud_queue_rounded, color: AppColors.primary),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Online Search',
+                                    style: GoogleFonts.manrope(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.onSurface,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Search YouTube discovery results in demo or safe mode.',
+                                    style: GoogleFonts.manrope(
+                                      fontSize: 11,
+                                      color: AppColors.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            FilledButton.tonalIcon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const OnlineSearchScreen()),
+                                );
+                              },
+                              icon: const Icon(Icons.open_in_new_rounded, size: 18),
+                              label: const Text('Open'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 20),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),

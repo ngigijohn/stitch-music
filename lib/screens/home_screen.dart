@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../models/music_models.dart';
+import 'online_search_screen.dart';
 import 'now_playing_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -25,6 +26,8 @@ class HomeScreen extends StatelessWidget {
                   delegate: SliverChildListDelegate([
                     const SizedBox(height: 8),
                     _HeroSection(),
+                    const SizedBox(height: 28),
+                    const _OnlineDiscoverySection(),
                     const SizedBox(height: 40),
                     _RecentPlaysSection(),
                     const SizedBox(height: 40),
@@ -37,6 +40,143 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _OnlineDiscoverySection extends StatelessWidget {
+  const _OnlineDiscoverySection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        padding: const EdgeInsets.all(22),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF111827), Color(0xFF1E293B), Color(0xFF0F172A)],
+          ),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.28)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.22),
+              blurRadius: 26,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    color: AppColors.primary.withValues(alpha: 0.18),
+                  ),
+                  child: const Icon(Icons.cloud_queue_rounded, color: AppColors.primary),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Online Discovery',
+                        style: GoogleFonts.epilogue(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.onSurface,
+                          letterSpacing: -0.6,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Explore the YouTube search experience in demo mode while official API integration stays fail-closed.',
+                        style: GoogleFonts.manrope(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.onSurfaceVariant,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _StatusChip(label: 'Demo Results'),
+                _StatusChip(label: 'Entitlement Banners'),
+                _StatusChip(label: 'Policy-Compliant'),
+              ],
+            ),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                FilledButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const OnlineSearchScreen()),
+                    );
+                  },
+                  icon: const Icon(Icons.travel_explore_rounded, size: 18),
+                  label: const Text('Open Online Search'),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'No playback is enabled here yet.',
+                    textAlign: TextAlign.right,
+                    style: GoogleFonts.manrope(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  final String label;
+
+  const _StatusChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        color: Colors.white.withValues(alpha: 0.06),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.manrope(
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          color: AppColors.onSurface,
+        ),
       ),
     );
   }
