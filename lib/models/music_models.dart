@@ -96,6 +96,41 @@ class Mix {
   });
 }
 
+/// Represents a YouTube video search result.
+class YouTubeVideoResult {
+  final String videoId;
+  final String title;
+  final String channelTitle;
+  final String thumbnailUrl;
+  final String publishedAt;
+
+  const YouTubeVideoResult({
+    required this.videoId,
+    required this.title,
+    required this.channelTitle,
+    required this.thumbnailUrl,
+    required this.publishedAt,
+  });
+
+  factory YouTubeVideoResult.fromJson(Map<String, dynamic> json) {
+    final snippet = json['snippet'] as Map<String, dynamic>? ?? const {};
+    final id = json['id'] as Map<String, dynamic>? ?? const {};
+    final thumbs =
+        snippet['thumbnails'] as Map<String, dynamic>? ?? const {};
+    final medThumb =
+        (thumbs['medium'] as Map<String, dynamic>? ?? const {})['url']
+            as String? ??
+        '';
+    return YouTubeVideoResult(
+      videoId: (id['videoId'] ?? '').toString(),
+      title: (snippet['title'] ?? 'Unknown Title').toString(),
+      channelTitle: (snippet['channelTitle'] ?? 'Unknown Channel').toString(),
+      thumbnailUrl: medThumb,
+      publishedAt: (snippet['publishedAt'] ?? '').toString(),
+    );
+  }
+}
+
 class Playlist {
   final String id;
   final String name;

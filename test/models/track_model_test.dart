@@ -39,4 +39,41 @@ void main() {
       expect(track.songId, isNull);
     });
   });
+
+  group('YouTubeVideoResult.fromJson', () {
+    test('parses all fields from a valid API response item', () {
+      final item = {
+        'id': {'videoId': 'dQw4w9WgXcQ'},
+        'snippet': {
+          'title': 'Never Gonna Give You Up',
+          'channelTitle': 'Rick Astley',
+          'publishedAt': '2009-10-25T06:57:33Z',
+          'thumbnails': {
+            'medium': {
+              'url': 'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg',
+            },
+          },
+        },
+      };
+
+      final result = YouTubeVideoResult.fromJson(item);
+
+      expect(result.videoId, 'dQw4w9WgXcQ');
+      expect(result.title, 'Never Gonna Give You Up');
+      expect(result.channelTitle, 'Rick Astley');
+      expect(result.publishedAt, '2009-10-25T06:57:33Z');
+      expect(result.thumbnailUrl,
+          'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg');
+    });
+
+    test('falls back gracefully when fields are missing', () {
+      final result = YouTubeVideoResult.fromJson({});
+
+      expect(result.videoId, '');
+      expect(result.title, 'Unknown Title');
+      expect(result.channelTitle, 'Unknown Channel');
+      expect(result.thumbnailUrl, '');
+      expect(result.publishedAt, '');
+    });
+  });
 }

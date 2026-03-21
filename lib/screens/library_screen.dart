@@ -6,6 +6,7 @@ import '../models/music_models.dart';
 import '../services/playback_controller.dart';
 import '../theme/app_theme.dart';
 import 'now_playing_screen.dart';
+import 'playlists_screen.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
@@ -95,6 +96,27 @@ class _LibraryScreenState extends State<LibraryScreen> {
                             icon: const Icon(Icons.refresh_rounded),
                             color: AppColors.primary,
                             tooltip: 'Rescan device',
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.of(context).push(
+                              PageRouteBuilder(
+                                pageBuilder: (_, a1, a2) =>
+                                    const PlaylistsScreen(),
+                                transitionsBuilder: (_, anim, __, child) =>
+                                    SlideTransition(
+                                  position: Tween(
+                                          begin: const Offset(1, 0),
+                                          end: Offset.zero)
+                                      .animate(CurvedAnimation(
+                                          parent: anim,
+                                          curve: Curves.easeOutCubic)),
+                                  child: child,
+                                ),
+                              ),
+                            ),
+                            icon: const Icon(Icons.queue_music_rounded),
+                            color: AppColors.onSurfaceVariant,
+                            tooltip: 'Playlists',
                           ),
                         ],
                       ),

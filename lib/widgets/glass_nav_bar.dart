@@ -6,11 +6,14 @@ import '../theme/app_theme.dart';
 class GlassNavBar extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onTap;
+  /// Called when the Library tab (index 2) is long-pressed. Used to open Playlists.
+  final VoidCallback? onLibraryLongPress;
 
   const GlassNavBar({
     super.key,
     required this.selectedIndex,
     required this.onTap,
+    this.onLibraryLongPress,
   });
 
   static const _items = [
@@ -49,6 +52,7 @@ class GlassNavBar extends StatelessWidget {
                 return Expanded(
                   child: GestureDetector(
                     onTap: () => onTap(i),
+                    onLongPress: i == 2 ? onLibraryLongPress : null,
                     behavior: HitTestBehavior.opaque,
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 250),

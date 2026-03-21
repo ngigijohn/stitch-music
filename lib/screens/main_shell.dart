@@ -7,6 +7,7 @@ import 'home_screen.dart';
 import 'library_screen.dart';
 import 'playlists_screen.dart';
 import 'profile_screen.dart';
+import 'youtube_search_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -22,7 +23,7 @@ class _MainShellState extends State<MainShell> {
   // Keep pages alive when switching tabs
   static const _pages = [
     HomeScreen(),
-    PlaylistsScreen(),
+    YouTubeSearchScreen(),
     LibraryScreen(),
     ProfileScreen(),
   ];
@@ -31,6 +32,18 @@ class _MainShellState extends State<MainShell> {
   void initState() {
     super.initState();
     _playback.init();
+  }
+
+  void _openPlaylists() {
+    Navigator.of(context).push(PageRouteBuilder(
+      pageBuilder: (_, a1, a2) => const PlaylistsScreen(),
+      transitionsBuilder: (_, anim, __, child) => SlideTransition(
+        position: Tween(begin: const Offset(1, 0), end: Offset.zero).animate(
+          CurvedAnimation(parent: anim, curve: Curves.easeOutCubic),
+        ),
+        child: child,
+      ),
+    ));
   }
 
   @override
@@ -55,6 +68,7 @@ class _MainShellState extends State<MainShell> {
                 GlassNavBar(
                   selectedIndex: _selectedIndex,
                   onTap: (i) => setState(() => _selectedIndex = i),
+                  onLibraryLongPress: _openPlaylists,
                 ),
               ],
             ),
