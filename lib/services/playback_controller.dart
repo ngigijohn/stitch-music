@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/music_models.dart';
+import 'analytics_service.dart';
 
 enum QueueRepeatMode { none, one, all }
 
@@ -101,6 +102,7 @@ class PlaybackController extends ChangeNotifier {
       notifyListeners();
     });
 
+    await AnalyticsService.instance.init();
     await scanDeviceLibrary();
     await _restorePlaylists();
     await _restoreSessionState();
@@ -194,9 +196,19 @@ class PlaybackController extends ChangeNotifier {
     }
 
     try {
+      // End the previous play session (skipped=true if we're cutting across)
+      AnalyticsService.instance.recordPlayEnd(
+          secondsPlayed: _position.inSeconds, skipped: true);
       _currentIndex = index;
       _position = Duration.zero;
       _addToRecents(track);
+      AnalyticsService.instance.recordPlayStart(
+        trackId: track.id,
+        title: track.title,
+        artist: track.artist,
+        album: track.album,
+        durationMs: track.durationMs,
+      );
       final uri = source.startsWith('content://') ? Uri.parse(source) : Uri.file(source);
       await _player.setAudioSource(AudioSource.uri(uri));
       await _player.play();
@@ -297,11 +309,13 @@ class PlaybackController extends ChangeNotifier {
   }
 
   Future<void> toggleFavorite(String trackId) async {
+    final bool added = !_favorites.contains(trackId);
     if (_favorites.contains(trackId)) {
       _favorites.remove(trackId);
     } else {
       _favorites.add(trackId);
     }
+    AnalyticsService.instance.recordFavorite(trackId: trackId, added: added);
     await _saveFavoritesAndRecents();
     notifyListeners();
   }
@@ -414,6 +428,9 @@ class PlaybackController extends ChangeNotifier {
   }
 
   Future<void> _handleTrackCompleted() async {
+    // Mark the completed track as listened fully (not skipped)
+    AnalyticsService.instance.recordPlayEnd(
+        secondsPlayed: _position.inSeconds, skipped: false);
     if (_repeatMode == QueueRepeatMode.one) {
       await playAtIndex(_currentIndex);
       return;
