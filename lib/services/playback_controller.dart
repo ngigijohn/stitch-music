@@ -565,6 +565,22 @@ class PlaybackController extends ChangeNotifier {
     }
   }
 
+  @visibleForTesting
+  void loadQueueForTest(List<Track> tracks) {
+    _library
+      ..clear()
+      ..addAll(tracks);
+    _queue
+      ..clear()
+      ..addAll(tracks);
+    _playlists.clear();
+    _favorites.clear();
+    _recents.clear();
+    _currentIndex = -1;
+    _scanError = null;
+    notifyListeners();
+  }
+
   Future<void> disposeController() async {
     _persistDebounce?.cancel();
     await _saveSessionState();
