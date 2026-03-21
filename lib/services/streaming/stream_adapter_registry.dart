@@ -1,4 +1,5 @@
 import 'stream_backend_gateway.dart';
+import 'stream_mock_backend_gateway.dart';
 import 'stream_source_adapter.dart';
 import 'youtube_compliant_discovery_adapter.dart';
 
@@ -13,6 +14,10 @@ class StreamAdapterRegistry {
       'youtube': YouTubeCompliantDiscoveryAdapter(gateway: effectiveGateway),
     };
     return StreamAdapterRegistry._(adapters);
+  }
+
+  factory StreamAdapterRegistry.demoRegistry() {
+    return StreamAdapterRegistry.defaultRegistry(gateway: const MockYouTubeBackendGateway());
   }
 
   StreamSourceAdapter? byProvider(String provider) => _adapters[provider];

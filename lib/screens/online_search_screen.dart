@@ -14,7 +14,6 @@ class OnlineSearchScreen extends StatefulWidget {
 
 class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
   final TextEditingController _queryController = TextEditingController();
-  final StreamAdapterRegistry _registry = StreamAdapterRegistry.defaultRegistry();
 
   static const String _provider = 'youtube';
 
@@ -22,6 +21,10 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
   StreamDiscoveryResult? _result;
   bool _loadingEntitlement = true;
   bool _searching = false;
+  bool _demoMode = true;
+
+  StreamAdapterRegistry get _registry =>
+      _demoMode ? StreamAdapterRegistry.demoRegistry() : StreamAdapterRegistry.defaultRegistry();
 
   @override
   void initState() {
@@ -145,6 +148,36 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
               )
             else
               _EntitlementBanner(entitlement: entitlement),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+              child: Row(
+                children: [
+                  Switch.adaptive(
+                    value: _demoMode,
+                    onChanged: (value) {
+                      setState(() {
+                        _demoMode = value;
+                        _result = null;
+                      });
+                      _refreshEntitlement();
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _demoMode
+                          ? 'Demo mode: mocked provider results for UI testing'
+                          : 'Production-safe mode: fail-closed until official backend is configured',
+                      style: GoogleFonts.manrope(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -378,7 +411,7 @@ class _ResultPane extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${c.artist} • ${c.provider.toUpperCase()}',
+                      '${c.artist} • ${c.provider.toUpperCase()}${c.duration == null ? '' : ' • ${_fmtDuration(c.duration!)}'}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.manrope(
@@ -402,5 +435,11 @@ class _ResultPane extends StatelessWidget {
         );
       },
     );
+  }
+
+  static String _fmtDuration(Duration duration) {
+    final minutes = duration.inMinutes;
+    final seconds = duration.inSeconds % 60;
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 }

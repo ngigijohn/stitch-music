@@ -27,6 +27,11 @@ Last updated: 2026-03-21
    - Discovery design doc with legal/compliance guardrails.
    - Stream source adapter interfaces and models.
    - YouTube adapter placeholder that does not extract or resolve unlicensed media.
+- YouTube discovery UI progress shipped:
+   - Read-only online search screen.
+   - Entitlement status banners.
+   - Backend gateway boundary for official API integration.
+   - Mock backend for safe UX testing without real provider credentials.
 
 ## Major Milestones
 1. Initial app build and UI architecture from provided design ZIP.
@@ -83,4 +88,5 @@ Last updated: 2026-03-21
    - CI gates for release readiness.
 5. YouTube streaming request:
    - Wire official API auth and entitlement checks into the compliant adapter.
-   - Add read-only discovery UI with explicit playability states.
+   - Replace mock gateway with official backend integration.
+   - Add queue insertion only for resolvable/entitled results.
