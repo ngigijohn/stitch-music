@@ -59,15 +59,15 @@ Add YouTube as a discovery/playback source only through policy-compliant, licens
 ### Current scaffold
 
 - `YouTubeCompliantDiscoveryAdapter`
-   - Routes discovery and playback resolution through a backend gateway boundary.
-   - In production-safe mode, returns explicit not-configured errors until official API auth is wired.
-   - Playback intentionally returns `null` and `false` without compliant backend support.
+  - Routes discovery and playback resolution through a backend gateway boundary.
+  - In production-safe mode, returns explicit not-configured errors until official API auth is wired.
+  - Playback intentionally returns `null` and `false` without compliant backend support.
 - `NoopStreamBackendGateway`
-   - Fail-closed default for production-safe mode.
+  - Fail-closed default for production-safe mode.
 - `MockYouTubeBackendGateway`
-   - Returns demo entitlement + mock catalog results for UI testing only.
+  - Returns demo entitlement + mock catalog results for UI testing only.
 - `OnlineSearchScreen`
-   - Read-only discovery UI with entitlement banners and demo/prod-safe mode toggle.
+  - Read-only discovery UI with entitlement banners and demo/prod-safe mode toggle.
 
 ## Runtime Flow (target)
 

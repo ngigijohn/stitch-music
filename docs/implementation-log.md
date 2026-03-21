@@ -3,6 +3,7 @@
 Last updated: 2026-03-21
 
 ## What We Have Delivered
+
 - Flutter app scaffolded from design assets with Material 3 dark expressive theme.
 - Core playback stack integrated with just_audio.
 - Android local music discovery migrated to native MediaStore via method channel.
@@ -24,16 +25,17 @@ Last updated: 2026-03-21
   - main, sprint/current, and per-agent branches.
   - CI workflow and PR/issue templates.
 - YouTube streaming discovery and adapter scaffolding shipped (policy-compliant, fail-closed):
-   - Discovery design doc with legal/compliance guardrails.
-   - Stream source adapter interfaces and models.
-   - YouTube adapter placeholder that does not extract or resolve unlicensed media.
+  - Discovery design doc with legal/compliance guardrails.
+  - Stream source adapter interfaces and models.
+  - YouTube adapter placeholder that does not extract or resolve unlicensed media.
 - YouTube discovery UI progress shipped:
-   - Read-only online search screen.
-   - Entitlement status banners.
-   - Backend gateway boundary for official API integration.
-   - Mock backend for safe UX testing without real provider credentials.
+  - Read-only online search screen.
+  - Entitlement status banners.
+  - Backend gateway boundary for official API integration.
+  - Mock backend for safe UX testing without real provider credentials.
 
 ## Major Milestones
+
 1. Initial app build and UI architecture from provided design ZIP.
 2. Build failure investigation around Android plugin compatibility.
 3. Replacement of filesystem scan strategy with MediaStore channel approach.
@@ -44,36 +46,43 @@ Last updated: 2026-03-21
 ## Learnings and Decisions
 
 ### 1) Android media access strategy
+
 - Learning: Direct filesystem scanning is unreliable under modern Android scoped storage.
 - Decision: Use MediaStore query on Android native side and return mapped song metadata over a method channel.
 - Impact: Stable song discovery and better compatibility with current Android storage model.
 
 ### 2) Plugin/Gradle compatibility
+
 - Learning: Some third-party plugins can fail under AGP 8+ if namespace/manifest requirements are not met.
 - Decision: Remove incompatible plugin path and prefer native integration where needed.
 - Impact: Debug build stability recovered.
 
 ### 3) State resilience
+
 - Learning: Playback and queue state can drift during reorder/restore unless index adjustments are explicit.
 - Decision: Centralize queue + index logic in PlaybackController and persist minimal identifiers.
 - Impact: Fewer playback edge-case regressions after reorder and app relaunch.
 
 ### 4) Test reliability with Google Fonts
+
 - Learning: Theme tests touching Google Fonts can fail if bindings are not initialized.
 - Decision: Use widget-test binding initialization and disable runtime font fetching in tests.
 - Impact: Deterministic tests in local and CI runs.
 
 ### 5) Parallel workflow hygiene
+
 - Learning: Branch automation requires an initial commit (HEAD) before creating branch topology.
 - Decision: Establish baseline commit first, then create sprint and agent branches.
 - Impact: Smooth parallel lane execution and clean merge flow.
 
 ## Current Test Status (Latest Known)
+
 - flutter test: passing.
 - flutter analyze: passing.
 - flutter build apk --debug: passing.
 
 ## What To Work On Next
+
 1. Playback polish:
    - Repeat/shuffle modes.
    - Better end-of-queue behavior and error recovery UX.

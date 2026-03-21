@@ -197,7 +197,6 @@ class PlaybackController extends ChangeNotifier {
       _currentIndex = index;
       _position = Duration.zero;
       _addToRecents(track);
-      _addToRecents(track);
       final uri = source.startsWith('content://') ? Uri.parse(source) : Uri.file(source);
       await _player.setAudioSource(AudioSource.uri(uri));
       await _player.play();

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../services/streaming/stream_adapter_registry.dart';
+import '../services/streaming/online_search_activity_service.dart';
 import '../services/streaming/stream_discovery_models.dart';
 import '../theme/app_theme.dart';
 
@@ -14,6 +15,7 @@ class OnlineSearchScreen extends StatefulWidget {
 
 class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
   final TextEditingController _queryController = TextEditingController();
+  final OnlineSearchActivityService _activity = OnlineSearchActivityService.instance;
 
   static const String _provider = 'youtube';
 
@@ -88,6 +90,12 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
       _result = res;
       _searching = false;
     });
+    _activity.recordSearch(
+      query: q,
+      provider: _provider,
+      resultCount: res.candidates.length,
+      demoMode: _demoMode,
+    );
   }
 
   @override
