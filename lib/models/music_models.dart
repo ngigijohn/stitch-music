@@ -96,6 +96,90 @@ class Mix {
   });
 }
 
+/// Represents a YouTube video search result.
+class YouTubeVideoResult {
+  final String videoId;
+  final String title;
+  final String channelTitle;
+  final String thumbnailUrl;
+  final String publishedAt;
+
+  const YouTubeVideoResult({
+    required this.videoId,
+    required this.title,
+    required this.channelTitle,
+    required this.thumbnailUrl,
+    required this.publishedAt,
+  });
+
+  factory YouTubeVideoResult.fromJson(Map<String, dynamic> json) {
+    final snippet = json['snippet'] as Map<String, dynamic>? ?? const {};
+    final id = json['id'] as Map<String, dynamic>? ?? const {};
+    final thumbs =
+        snippet['thumbnails'] as Map<String, dynamic>? ?? const {};
+    final medThumb =
+        (thumbs['medium'] as Map<String, dynamic>? ?? const {})['url']
+            as String? ??
+        '';
+    return YouTubeVideoResult(
+      videoId: (id['videoId'] ?? '').toString(),
+      title: (snippet['title'] ?? 'Unknown Title').toString(),
+      channelTitle: (snippet['channelTitle'] ?? 'Unknown Channel').toString(),
+      thumbnailUrl: medThumb,
+      publishedAt: (snippet['publishedAt'] ?? '').toString(),
+    );
+  }
+}
+
+class Playlist {
+  final String id;
+  final String name;
+  final List<String> trackIds;
+  final DateTime createdAt;
+
+  const Playlist({
+    required this.id,
+    required this.name,
+    required this.trackIds,
+    required this.createdAt,
+  });
+
+  factory Playlist.fromMap(Map<String, dynamic> map) {
+    final rawTrackIds = (map['trackIds'] as List<dynamic>? ?? const <dynamic>[])
+        .map((e) => e.toString())
+        .where((e) => e.isNotEmpty)
+        .toList();
+
+    return Playlist(
+      id: (map['id'] ?? '').toString(),
+      name: (map['name'] ?? 'Untitled Playlist').toString(),
+      trackIds: rawTrackIds,
+      createdAt: DateTime.tryParse((map['createdAt'] ?? '').toString()) ?? DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'trackIds': trackIds,
+      'createdAt': createdAt.toIso8601String(),
+    };
+  }
+
+  Playlist copyWith({
+    String? name,
+    List<String>? trackIds,
+  }) {
+    return Playlist(
+      id: id,
+      name: name ?? this.name,
+      trackIds: trackIds ?? this.trackIds,
+      createdAt: createdAt,
+    );
+  }
+}
+
 // ---------- Sample data ----------
 const List<Track> kQueueTracks = [
   Track(id: '1', title: 'Neon Horizon', artist: 'Stellar Echo', album: 'Midnight Circuits', duration: '4:08', dominantColor: Color(0xFF7C4DFF)),

@@ -351,28 +351,33 @@ class _SmallArtistCard extends StatelessWidget {
         color: color,
       ),
       padding: const EdgeInsets.all(12),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.surfaceContainerHighest,
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.primary.withValues(alpha: 0.5),
-                  const Color(0xFF7C4DFF).withValues(alpha: 0.3),
-                ],
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.surfaceContainerHighest,
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withValues(alpha: 0.5),
+                    const Color(0xFF7C4DFF).withValues(alpha: 0.3),
+                  ],
+                ),
               ),
+              child: const Icon(Icons.person_rounded, size: 18, color: AppColors.primary),
             ),
-            child: const Icon(Icons.person_rounded, size: 22, color: AppColors.primary),
-          ),
-          const SizedBox(height: 6),
-          Text(name, style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w800)),
-          Text(role, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.onSurfaceVariant)),
-        ],
+            const SizedBox(height: 4),
+            Text(name, style: Theme.of(context).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w800)),
+            Text(role, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.onSurfaceVariant)),
+          ],
+        ),
       ),
     );
   }
