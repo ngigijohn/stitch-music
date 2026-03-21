@@ -3,7 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../models/music_models.dart';
+import '../services/cache_service.dart';
 import '../services/playback_controller.dart';
+import 'cache_settings_screen.dart';
 import 'online_search_screen.dart';
 import '../theme/app_theme.dart';
 import '../screens/now_playing_screen.dart';
@@ -18,6 +20,7 @@ class LibraryScreen extends StatefulWidget {
 class _LibraryScreenState extends State<LibraryScreen> {
   final TextEditingController _searchCtrl = TextEditingController();
   final PlaybackController _playback = PlaybackController.instance;
+  final CacheService _cache = CacheService.instance;
 
   String _query = '';
   int _selectedChip = 0;
@@ -51,7 +54,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: AnimatedBuilder(
-        animation: _playback,
+        animation: Listenable.merge([_playback, _cache]),
         builder: (context, _) {
           final List<Track> songs = _filtered(_playback.library);
           return Stack(
@@ -91,6 +94,40 @@ class _LibraryScreenState extends State<LibraryScreen> {
                               ),
                             ),
                           ),
+                          if (_cache.isOfflineMode)
+                            Container(
+                              margin: const EdgeInsets.only(right: 8),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFF6B35)
+                                    .withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(999),
+                                border: Border.all(
+                                  color: const Color(0xFFFF6B35)
+                                      .withValues(alpha: 0.5),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.wifi_off_rounded,
+                                    size: 12,
+                                    color: Color(0xFFFF6B35),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Offline',
+                                    style: GoogleFonts.manrope(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFFFF6B35),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           IconButton(
                             onPressed: _playback.scanDeviceLibrary,
                             icon: const Icon(Icons.refresh_rounded),
@@ -101,11 +138,34 @@ class _LibraryScreenState extends State<LibraryScreen> {
                             onPressed: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (_) => const OnlineSearchScreen()),
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const CacheSettingsScreen()),
                               );
                             },
-                            icon: const Icon(Icons.cloud_queue_rounded),
+                            icon: const Icon(
+                                Icons.download_for_offline_rounded),
                             color: AppColors.primary,
+                            tooltip: 'Offline & cache settings',
+                          ),
+                          IconButton(
+                            onPressed: _cache.isOfflineMode
+                                ? null
+                                : () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) =>
+                                              const OnlineSearchScreen()),
+                                    );
+                                  },
+                            icon: Icon(
+                              Icons.cloud_queue_rounded,
+                              color: _cache.isOfflineMode
+                                  ? AppColors.onSurfaceVariant
+                                      .withValues(alpha: 0.35)
+                                  : AppColors.primary,
+                            ),
                             tooltip: 'Online search (YouTube)',
                           ),
                         ],
@@ -117,7 +177,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(18),
-                          color: AppColors.surfaceContainerHigh.withValues(alpha: 0.72),
+                          color: _cache.isOfflineMode
+                              ? AppColors.surfaceContainerHigh.withValues(alpha: 0.40)
+                              : AppColors.surfaceContainerHigh.withValues(alpha: 0.72),
                           border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.45)),
                         ),
                         child: Row(
@@ -156,14 +218,23 @@ class _LibraryScreenState extends State<LibraryScreen> {
                               ),
                             ),
                             FilledButton.tonalIcon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const OnlineSearchScreen()),
-                                );
-                              },
-                              icon: const Icon(Icons.open_in_new_rounded, size: 18),
-                              label: const Text('Open'),
+                              onPressed: _cache.isOfflineMode
+                                  ? null
+                                  : () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (_) => const OnlineSearchScreen()),
+                                      );
+                                    },
+                              icon: Icon(
+                                _cache.isOfflineMode
+                                    ? Icons.wifi_off_rounded
+                                    : Icons.open_in_new_rounded,
+                                size: 18,
+                              ),
+                              label: Text(
+                                  _cache.isOfflineMode ? 'Offline' : 'Open'),
                             ),
                           ],
                         ),
@@ -252,6 +323,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
                               itemBuilder: (_, i) => _TrackRow(
                                 track: songs[i],
                                 isPlaying: _playback.currentTrack?.id == songs[i].id && _playback.isPlaying,
+                                isPinned: _cache.isPinned(songs[i].id),
+                                onTogglePin: () => _cache.togglePin(songs[i].id),
                                 onTap: () async {
                                   await _playback.playFromLibrary(songs[i], sourceList: songs);
                                   if (!context.mounted) return;
@@ -463,9 +536,17 @@ class _ActionButton extends StatelessWidget {
 class _TrackRow extends StatelessWidget {
   final Track track;
   final bool isPlaying;
+  final bool isPinned;
+  final VoidCallback onTogglePin;
   final VoidCallback onTap;
 
-  const _TrackRow({required this.track, required this.isPlaying, required this.onTap});
+  const _TrackRow({
+    required this.track,
+    required this.isPlaying,
+    required this.isPinned,
+    required this.onTogglePin,
+    required this.onTap,
+  });
 
   void _showTrackMenu(BuildContext context) {
     final PlaybackController playback = PlaybackController.instance;
@@ -653,7 +734,16 @@ class _TrackRow extends StatelessWidget {
               track.duration,
               style: GoogleFonts.manrope(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.onSurfaceVariant),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 4),
+            GestureDetector(
+              onTap: onTogglePin,
+              child: Icon(
+                isPinned ? Icons.download_done_rounded : Icons.download_for_offline_outlined,
+                size: 18,
+                color: isPinned ? AppColors.primary : AppColors.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(width: 4),
             GestureDetector(
               onTap: () => _showTrackMenu(context),
               child: const Icon(Icons.more_vert_rounded, color: AppColors.onSurfaceVariant, size: 18),
