@@ -4,6 +4,7 @@
 - Playback polish: repeat and shuffle modes
 - Persistence hardening: queue/order/versioned session state
 - Diagnostics UX refinements and actionable permission guidance
+- YouTube streaming discovery (policy-compliant architecture and API path)
 
 ## Next Up
 - Favorites and recents persistence
@@ -24,7 +25,7 @@
 
 ## New Feature Request
 ### Stream Audio from YouTube
-Status: Discovery
+Status: Discovery (active)
 Priority: High
 
 Scope for discovery:
@@ -36,6 +37,7 @@ Scope for discovery:
 Notes:
 - Implementation must follow platform terms and copyright compliance.
 - Avoid unlicensed extraction workflows.
+- Adapter currently fails closed until official API auth + entitlement are wired.
 
 ## Future
 - Artist and album detail pages

@@ -23,6 +23,10 @@ Last updated: 2026-03-21
 - Branching and collaboration infrastructure shipped:
   - main, sprint/current, and per-agent branches.
   - CI workflow and PR/issue templates.
+- YouTube streaming discovery and adapter scaffolding shipped (policy-compliant, fail-closed):
+   - Discovery design doc with legal/compliance guardrails.
+   - Stream source adapter interfaces and models.
+   - YouTube adapter placeholder that does not extract or resolve unlicensed media.
 
 ## Major Milestones
 1. Initial app build and UI architecture from provided design ZIP.
@@ -78,4 +82,5 @@ Last updated: 2026-03-21
    - Integration coverage for full local playback path.
    - CI gates for release readiness.
 5. YouTube streaming request:
-   - Keep in discovery only until legal/policy-compliant architecture is confirmed.
+   - Wire official API auth and entitlement checks into the compliant adapter.
+   - Add read-only discovery UI with explicit playability states.
