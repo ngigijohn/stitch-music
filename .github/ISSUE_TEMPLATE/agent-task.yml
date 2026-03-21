@@ -1,0 +1,61 @@
+name: Agent Task
+about: Parallel task assignment for one delivery agent
+labels: [agent-task]
+body:
+  - type: input
+    id: owner
+    attributes:
+      label: Agent Owner
+      description: Name or ID of the assigned agent
+      placeholder: agent-a
+    validations:
+      required: true
+
+  - type: dropdown
+    id: lane
+    attributes:
+      label: Workstream
+      options:
+        - Playback
+        - Library Scan
+        - UI/UX
+        - Persistence
+        - QA
+        - DevOps
+    validations:
+      required: true
+
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+      description: Clear one-sentence outcome
+      placeholder: Implement playlist create and reorder flow.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: Definition of done
+      placeholder: |
+        - All tests pass
+        - No analyzer warnings
+        - UI behavior verified on device
+    validations:
+      required: true
+
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints
+      description: Files, APIs, or architecture constraints
+      placeholder: Do not change Android manifest behavior.
+
+  - type: textarea
+    id: test_plan
+    attributes:
+      label: Test Plan
+      description: How this change will be validated
+      placeholder: flutter analyze, flutter test, manual run on Android device
