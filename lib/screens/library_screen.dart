@@ -156,14 +156,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     const SizedBox(height: 10),
                     if (_playback.isScanning)
                       const LinearProgressIndicator(minHeight: 2),
-                    if (_playback.scanError != null)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
-                        child: Text(
-                          _playback.scanError!,
-                          style: GoogleFonts.manrope(color: const Color(0xFFFF9AA6), fontSize: 12),
-                        ),
-                      ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                       child: Text(
@@ -228,10 +220,17 @@ class _DiagnosticsPanel extends StatelessWidget {
 
   const _DiagnosticsPanel({required this.playback, required this.songCount});
 
+  static const _green = Color(0xFF8FE388);
+  static const _red   = Color(0xFFFF9AA6);
+  static const _amber = Color(0xFFFFC86B);
+
   @override
   Widget build(BuildContext context) {
-    final permission = playback.permissionStatus;
-    final bool granted = permission == PermissionStatus.granted;
+    final status   = playback.permissionStatus;
+    final granted  = status == PermissionStatus.granted ||
+                     status == PermissionStatus.limited;
+    final permaDenied = status == PermissionStatus.permanentlyDenied;
+    final error    = playback.scanError;
     final DateTime? last = playback.lastScanAt;
 
     return Padding(
@@ -246,25 +245,35 @@ class _DiagnosticsPanel extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // --- permission status row ---
             Row(
               children: [
                 Icon(
-                  granted ? Icons.check_circle_rounded : Icons.error_outline_rounded,
+                  granted
+                      ? Icons.check_circle_rounded
+                      : permaDenied
+                          ? Icons.block_rounded
+                          : Icons.warning_amber_rounded,
                   size: 16,
-                  color: granted ? const Color(0xFF8FE388) : const Color(0xFFFF9AA6),
+                  color: granted ? _green : permaDenied ? _red : _amber,
                 ),
                 const SizedBox(width: 6),
-                Text(
-                  granted ? 'Media access granted' : 'Media access required',
-                  style: GoogleFonts.manrope(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: granted ? const Color(0xFF8FE388) : const Color(0xFFFF9AA6),
+                Expanded(
+                  child: Text(
+                    granted
+                        ? 'Media access granted'
+                        : permaDenied
+                            ? 'Permission permanently denied'
+                            : 'Media permission required',
+                    style: GoogleFonts.manrope(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: granted ? _green : permaDenied ? _red : _amber,
+                    ),
                   ),
                 ),
-                const Spacer(),
                 Text(
-                  playback.isScanning ? 'Scanning...' : 'Idle',
+                  playback.isScanning ? 'Scanning…' : 'Idle',
                   style: GoogleFonts.manrope(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
@@ -274,6 +283,7 @@ class _DiagnosticsPanel extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
+            // --- metrics ---
             Text(
               'Songs detected: $songCount',
               style: GoogleFonts.manrope(fontSize: 11, color: AppColors.onSurfaceVariant),
@@ -283,21 +293,53 @@ class _DiagnosticsPanel extends StatelessWidget {
               'Last scan: ${last == null ? 'Never' : _fmtTime(last)}',
               style: GoogleFonts.manrope(fontSize: 11, color: AppColors.onSurfaceVariant),
             ),
-            if (!granted)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: GestureDetector(
-                  onTap: openAppSettings,
-                  child: Text(
-                    'Open app settings to allow music permission',
-                    style: GoogleFonts.manrope(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
+            // --- scan error with retry ---
+            if (error != null && !playback.isScanning) ...
+              [
+                const SizedBox(height: 8),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.info_outline_rounded, size: 14, color: _red),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        error,
+                        style: GoogleFonts.manrope(fontSize: 11, color: _red),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: playback.scanDeviceLibrary,
+                      child: Text(
+                        'Retry',
+                        style: GoogleFonts.manrope(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+              ],
+            // --- permission actions ---
+            if (!granted) ...
+              [
+                const SizedBox(height: 10),
+                if (permaDenied)
+                  _ActionButton(
+                    icon: Icons.settings_rounded,
+                    label: 'Open app settings',
+                    onTap: openAppSettings,
+                  )
+                else
+                  _ActionButton(
+                    icon: Icons.lock_open_rounded,
+                    label: 'Grant music permission',
+                    onTap: playback.scanDeviceLibrary,
+                  ),
+              ],
           ],
         ),
       ),
@@ -308,6 +350,43 @@ class _DiagnosticsPanel extends StatelessWidget {
     final h = dt.hour.toString().padLeft(2, '0');
     final m = dt.minute.toString().padLeft(2, '0');
     return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} $h:$m';
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  const _ActionButton({required this.icon, required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: AppColors.primary),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: GoogleFonts.manrope(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
