@@ -12,6 +12,20 @@ import '../models/music_models.dart';
 
 enum QueueRepeatMode { none, one, all }
 
+// ---------------------------------------------------------------------------
+// Storage key registry — bump _kVersion to trigger migration of new fields.
+// ---------------------------------------------------------------------------
+const int _kVersion = 1;
+const String _kQueueIds   = 'v${_kVersion}_queue_ids';
+const String _kCurrentId  = 'v${_kVersion}_current_track_id';
+const String _kPositionMs = 'v${_kVersion}_position_ms';
+const String _kRepeatMode = 'v${_kVersion}_repeat_mode';
+const String _kShuffle    = 'v${_kVersion}_shuffle_enabled';
+const String _kFavorites  = 'v${_kVersion}_favorites';
+const String _kRecents    = 'v${_kVersion}_recents';
+const String _kPlaylists  = 'v${_kVersion}_playlists_json';
+const int _kMaxRecents = 30;
+
 class PlaybackController extends ChangeNotifier {
   PlaybackController._();
   static final PlaybackController instance = PlaybackController._();
@@ -31,6 +45,8 @@ class PlaybackController extends ChangeNotifier {
   int _currentIndex = -1;
   QueueRepeatMode _repeatMode = QueueRepeatMode.none;
   bool _shuffleEnabled = false;
+  final Set<String> _favorites = {};
+  final List<Track> _recents = [];
 
   Timer? _persistDebounce;
 
@@ -56,6 +72,9 @@ class PlaybackController extends ChangeNotifier {
   Duration get duration => _duration;
   QueueRepeatMode get repeatMode => _repeatMode;
   bool get shuffleEnabled => _shuffleEnabled;
+  List<String> get favorites => List.unmodifiable(_favorites.toList());
+  List<Track> get recents => List.unmodifiable(_recents);
+  bool isFavorite(String trackId) => _favorites.contains(trackId);
 
   Future<void> init() async {
     if (_initialized) return;
@@ -85,6 +104,7 @@ class PlaybackController extends ChangeNotifier {
     await scanDeviceLibrary();
     await _restorePlaylists();
     await _restoreSessionState();
+    await _restoreFavoritesAndRecents();
   }
 
   Future<bool> _ensurePermissions() async {
@@ -176,6 +196,8 @@ class PlaybackController extends ChangeNotifier {
     try {
       _currentIndex = index;
       _position = Duration.zero;
+      _addToRecents(track);
+      _addToRecents(track);
       final uri = source.startsWith('content://') ? Uri.parse(source) : Uri.file(source);
       await _player.setAudioSource(AudioSource.uri(uri));
       await _player.play();
@@ -256,7 +278,7 @@ class PlaybackController extends ChangeNotifier {
     }
   }
 
-  void reorderQueue(int oldIndex, int newIndex) {
+  Future<void> reorderQueue(int oldIndex, int newIndex) async {
     if (oldIndex < 0 || oldIndex >= _queue.length) return;
     if (newIndex < 0 || newIndex > _queue.length) return;
     if (newIndex > oldIndex) newIndex--;
@@ -273,6 +295,23 @@ class PlaybackController extends ChangeNotifier {
     }
     _schedulePersist();
     notifyListeners();
+  }
+
+  Future<void> toggleFavorite(String trackId) async {
+    if (_favorites.contains(trackId)) {
+      _favorites.remove(trackId);
+    } else {
+      _favorites.add(trackId);
+    }
+    await _saveFavoritesAndRecents();
+    notifyListeners();
+  }
+
+  void _addToRecents(Track track) {
+    _recents.removeWhere((t) => t.id == track.id);
+    _recents.insert(0, track);
+    if (_recents.length > _kMaxRecents) _recents.removeLast();
+    _schedulePersist();
   }
 
   List<Track> tracksForPlaylist(String playlistId) {
@@ -375,11 +414,11 @@ class PlaybackController extends ChangeNotifier {
   Future<void> _saveSessionState() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList('queue_ids', _queue.map((t) => t.id).toList());
-      await prefs.setString('current_track_id', currentTrack?.id ?? '');
-      await prefs.setInt('position_ms', _position.inMilliseconds);
-      await prefs.setInt('repeat_mode', _repeatMode.index);
-      await prefs.setBool('shuffle_enabled', _shuffleEnabled);
+      await prefs.setStringList(_kQueueIds, _queue.map((t) => t.id).toList());
+      await prefs.setString(_kCurrentId, currentTrack?.id ?? '');
+      await prefs.setInt(_kPositionMs, _position.inMilliseconds);
+      await prefs.setInt(_kRepeatMode, _repeatMode.index);
+      await prefs.setBool(_kShuffle, _shuffleEnabled);
     } catch (_) {
       // Keep runtime resilient if persistence fails.
     }
@@ -389,16 +428,42 @@ class PlaybackController extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       final payload = jsonEncode(_playlists.map((p) => p.toMap()).toList());
-      await prefs.setString('playlists_json', payload);
+      await prefs.setString(_kPlaylists, payload);
     } catch (_) {
       // Keep runtime resilient if persistence fails.
     }
   }
 
+  Future<void> _saveFavoritesAndRecents() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(_kFavorites, _favorites.toList());
+      await prefs.setStringList(_kRecents, _recents.map((t) => t.id).toList());
+    } catch (_) {}
+  }
+
+  Future<void> _restoreFavoritesAndRecents() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final favIds = prefs.getStringList(_kFavorites) ?? [];
+      _favorites
+        ..clear()
+        ..addAll(favIds);
+      final recentIds = prefs.getStringList(_kRecents) ?? [];
+      _recents.clear();
+      for (final id in recentIds) {
+        final idx = _library.indexWhere((t) => t.id == id);
+        if (idx >= 0) _recents.add(_library[idx]);
+      }
+      notifyListeners();
+    } catch (_) {}
+  }
+
   Future<void> _restorePlaylists() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final String raw = prefs.getString('playlists_json') ?? '';
+      // Migrate legacy key on first run with versioned storage.
+      final String raw = prefs.getString(_kPlaylists) ?? prefs.getString('playlists_json') ?? '';
       if (raw.isEmpty) return;
 
       final decoded = jsonDecode(raw);
@@ -426,9 +491,10 @@ class PlaybackController extends ChangeNotifier {
   Future<void> _restoreSessionState() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final ids = prefs.getStringList('queue_ids') ?? const <String>[];
-      final currentId = prefs.getString('current_track_id') ?? '';
-      final posMs = prefs.getInt('position_ms') ?? 0;
+      // Migrate legacy keys on first run with versioned storage.
+      final ids = prefs.getStringList(_kQueueIds) ?? prefs.getStringList('queue_ids') ?? [];
+      final currentId = prefs.getString(_kCurrentId) ?? prefs.getString('current_track_id') ?? '';
+      final posMs = prefs.getInt(_kPositionMs) ?? prefs.getInt('position_ms') ?? 0;
 
       if (ids.isNotEmpty) {
         final restored = <Track>[];
