@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../services/audio_effects_service.dart';
 import '../services/playback_controller.dart';
 import '../theme/app_theme.dart';
 import 'queue_screen.dart';
+import 'settings_screen.dart';
 
 class NowPlayingScreen extends StatefulWidget {
   const NowPlayingScreen({super.key});
@@ -319,13 +321,19 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
   }
 
   Widget _buildSecondaryControls() {
+    final eq = AudioEffectsService.instance;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: const [
-        _Pill(icon: Icons.volume_up_rounded, label: 'Volume'),
-        _Pill(icon: Icons.speed_rounded, label: 'Speed'),
-        _Pill(icon: Icons.equalizer_rounded, label: 'EQ'),
-        _Pill(icon: Icons.share_rounded, label: 'Share'),
+      children: [
+        const _Pill(icon: Icons.volume_up_rounded, label: 'Volume'),
+        const _Pill(icon: Icons.speed_rounded, label: 'Speed'),
+        _Pill(
+          icon: Icons.equalizer_rounded,
+          label: 'EQ',
+          isActive: eq.isEnabled && eq.activePresetId != EqPresetId.normal,
+          onTap: () => _showEqPanel(context),
+        ),
+        const _Pill(icon: Icons.share_rounded, label: 'Share'),
       ],
     );
   }
@@ -368,6 +376,15 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     final int s = d.inSeconds % 60;
     return '$m:${s.toString().padLeft(2, '0')}';
   }
+
+  void _showEqPanel(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => const _EqPanel(),
+    );
+  }
 }
 
 class _AnimatedMeshBg extends StatelessWidget {
@@ -398,20 +415,35 @@ class _AnimatedMeshBg extends StatelessWidget {
 class _Pill extends StatelessWidget {
   final IconData icon;
   final String label;
-  const _Pill({required this.icon, required this.label});
+  final bool isActive;
+  final VoidCallback? onTap;
+  const _Pill({required this.icon, required this.label, this.isActive = false, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 72,
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: AppColors.surfaceContainerHigh),
-      child: Column(
-        children: [
-          Icon(icon, color: AppColors.onSurfaceVariant, size: 22),
-          const SizedBox(height: 4),
-          Text(label, style: GoogleFonts.manrope(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.onSurfaceVariant)),
-        ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 72,
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: AppColors.surfaceContainerHigh,
+          border: isActive
+              ? Border.all(color: AppColors.primary.withValues(alpha: 0.6))
+              : null,
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: isActive ? AppColors.primary : AppColors.onSurfaceVariant, size: 22),
+            const SizedBox(height: 4),
+            Text(label, style: GoogleFonts.manrope(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: isActive ? AppColors.primary : AppColors.onSurfaceVariant,
+            )),
+          ],
+        ),
       ),
     );
   }
@@ -454,3 +486,210 @@ class _BottomBarBtn extends StatelessWidget {
     );
   }
 }
+
+// ─── EQ Panel bottom sheet ────────────────────────────────────────────────────
+
+class _EqPanel extends StatefulWidget {
+  const _EqPanel();
+
+  @override
+  State<_EqPanel> createState() => _EqPanelState();
+}
+
+class _EqPanelState extends State<_EqPanel> {
+  final AudioEffectsService _eq = AudioEffectsService.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _eq.addListener(_onUpdate);
+  }
+
+  @override
+  void dispose() {
+    _eq.removeListener(_onUpdate);
+    super.dispose();
+  }
+
+  void _onUpdate() => setState(() {});
+
+  @override
+  Widget build(BuildContext context) {
+    final bands = _eq.activeBands;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.45)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 12),
+          Container(
+            width: 36, height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.outlineVariant,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Header row
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                const Icon(Icons.equalizer_rounded, color: AppColors.primary, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Equalizer',
+                    style: GoogleFonts.epilogue(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 18,
+                      color: AppColors.onSurface,
+                    ),
+                  ),
+                ),
+                Switch.adaptive(
+                  value: _eq.isEnabled,
+                  onChanged: (v) => _eq.setEnabled(v),
+                  activeThumbColor: AppColors.primary,
+                  activeTrackColor: AppColors.primary.withValues(alpha: 0.5),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.tune_rounded, size: 20),
+                  color: AppColors.onSurfaceVariant,
+                  tooltip: 'Full EQ settings',
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          // Active preset chip
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                _eq.isEnabled ? _eq.activePreset.name : 'Off',
+                style: GoogleFonts.manrope(
+                  fontSize: 12,
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+          const Divider(indent: 20, endIndent: 20),
+          // Preset quick-select
+          SizedBox(
+            height: 38,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: kBuiltinPresets.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              itemBuilder: (_, i) {
+                final preset = kBuiltinPresets[i];
+                final selected = _eq.activePresetId == preset.id;
+                return ChoiceChip(
+                  label: Text(preset.name),
+                  selected: selected,
+                  onSelected: (_) => _eq.selectPreset(preset.id),
+                  selectedColor: AppColors.primary,
+                  backgroundColor: AppColors.surfaceContainerHighest,
+                  labelStyle: GoogleFonts.manrope(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: selected ? AppColors.onPrimary : AppColors.onSurfaceVariant,
+                  ),
+                  side: BorderSide.none,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Five band sliders
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: List.generate(5, (i) {
+                final gain = bands.gains[i];
+                return Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        gain >= 0 ? '+${gain.round()}' : '${gain.round()}',
+                        style: GoogleFonts.manrope(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: gain.abs() > 0.5
+                              ? AppColors.primary
+                              : AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                      RotatedBox(
+                        quarterTurns: 3,
+                        child: SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            trackHeight: 3,
+                            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
+                            activeTrackColor: AppColors.primary,
+                            inactiveTrackColor: AppColors.outlineVariant.withValues(alpha: 0.4),
+                          ),
+                          child: SizedBox(
+                            width: 100,
+                            child: Slider(
+                              value: gain.clamp(-12.0, 12.0),
+                              min: -12,
+                              max: 12,
+                              divisions: 24,
+                              onChanged: _eq.isEnabled
+                                  ? (v) => _eq.setCustomBand(i, v)
+                                  : null,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Text(
+                        kEqBandLabels[i],
+                        style: GoogleFonts.manrope(
+                          fontSize: 9,
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: _eq.resetToFlat,
+            icon: const Icon(Icons.refresh_rounded, size: 16),
+            label: Text(
+              'Reset to Flat',
+              style: GoogleFonts.manrope(fontSize: 12, fontWeight: FontWeight.w700),
+            ),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+}
+

@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/music_models.dart';
+import 'audio_effects_service.dart';
 
 enum QueueRepeatMode { none, one, all }
 
@@ -101,6 +102,7 @@ class PlaybackController extends ChangeNotifier {
       notifyListeners();
     });
 
+    await AudioEffectsService.instance.init();
     await scanDeviceLibrary();
     await _restorePlaylists();
     await _restoreSessionState();
