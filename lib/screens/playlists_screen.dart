@@ -5,6 +5,7 @@ import '../models/music_models.dart';
 import '../services/playback_controller.dart';
 import '../theme/app_theme.dart';
 import 'now_playing_screen.dart';
+import 'playlist_detail_screen.dart';
 
 class PlaylistsScreen extends StatefulWidget {
   const PlaylistsScreen({super.key});
@@ -65,6 +66,27 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Saved "$name"')),
     );
+  }
+
+  Future<void> _showRenameDialog(Playlist playlist) async {
+    final ctrl = TextEditingController(text: playlist.name);
+    final name = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Rename Playlist'),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'Playlist name'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, ctrl.text), child: const Text('Save')),
+        ],
+      ),
+    );
+    if (name == null || name.trim().isEmpty) return;
+    await _playback.renamePlaylist(playlist.id, name.trim());
   }
 
   Future<void> _playPlaylist(Playlist playlist) async {
@@ -140,17 +162,6 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Text(
-                        'MVP: create playlists from the current queue and replay them anytime.',
-                        style: GoogleFonts.manrope(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
                     const SizedBox(height: 14),
                     if (_playback.scanError != null)
                       Padding(
@@ -174,8 +185,15 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
                                 return _PlaylistCard(
                                   playlist: playlist,
                                   trackCount: tracks.length,
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => PlaylistDetailScreen(playlistId: playlist.id),
+                                    ),
+                                  ),
                                   onPlay: () => _playPlaylist(playlist),
                                   onDelete: () => _playback.deletePlaylist(playlist.id),
+                                  onRename: () => _showRenameDialog(playlist),
                                 );
                               },
                             ),
@@ -194,76 +212,89 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
 class _PlaylistCard extends StatelessWidget {
   final Playlist playlist;
   final int trackCount;
+  final VoidCallback onTap;
   final VoidCallback onPlay;
   final VoidCallback onDelete;
+  final VoidCallback onRename;
 
   const _PlaylistCard({
     required this.playlist,
     required this.trackCount,
+    required this.onTap,
     required this.onPlay,
     required this.onDelete,
+    required this.onRename,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: AppColors.surfaceContainerHigh.withValues(alpha: 0.70),
-        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.primary.withValues(alpha: 0.30),
-                  AppColors.primary.withValues(alpha: 0.10),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: AppColors.surfaceContainerHigh.withValues(alpha: 0.70),
+          border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withValues(alpha: 0.30),
+                    AppColors.primary.withValues(alpha: 0.10),
+                  ],
+                ),
+              ),
+              child: const Icon(Icons.queue_music_rounded, color: AppColors.primary),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    playlist.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '$trackCount tracks',
+                    style: GoogleFonts.manrope(
+                      color: AppColors.onSurfaceVariant,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ],
               ),
             ),
-            child: const Icon(Icons.queue_music_rounded, color: AppColors.primary),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  playlist.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '$trackCount tracks',
-                  style: GoogleFonts.manrope(
-                    color: AppColors.onSurfaceVariant,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
+            IconButton(
+              onPressed: onRename,
+              icon: const Icon(Icons.drive_file_rename_outline_rounded, size: 20),
+              color: AppColors.primary,
+              tooltip: 'Rename',
             ),
-          ),
-          IconButton(
-            onPressed: onDelete,
-            icon: const Icon(Icons.delete_outline_rounded),
-            color: AppColors.onSurfaceVariant,
-            tooltip: 'Delete playlist',
-          ),
-          FilledButton.tonalIcon(
-            onPressed: onPlay,
-            icon: const Icon(Icons.play_arrow_rounded, size: 18),
-            label: const Text('Play'),
-          ),
-        ],
+            IconButton(
+              onPressed: onDelete,
+              icon: const Icon(Icons.delete_outline_rounded),
+              color: AppColors.onSurfaceVariant,
+              tooltip: 'Delete playlist',
+            ),
+            FilledButton.tonalIcon(
+              onPressed: onPlay,
+              icon: const Icon(Icons.play_arrow_rounded, size: 18),
+              label: const Text('Play'),
+            ),
+          ],
+        ),
       ),
     );
   }

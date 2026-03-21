@@ -5,7 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../models/music_models.dart';
 import '../services/playback_controller.dart';
 import '../theme/app_theme.dart';
-import 'now_playing_screen.dart';
+import '../screens/now_playing_screen.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
@@ -397,10 +397,135 @@ class _TrackRow extends StatelessWidget {
 
   const _TrackRow({required this.track, required this.isPlaying, required this.onTap});
 
+  void _showTrackMenu(BuildContext context) {
+    final PlaybackController playback = PlaybackController.instance;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => AnimatedBuilder(
+        animation: playback,
+        builder: (ctx, __) {
+          final playlists = playback.playlists;
+          return Container(
+            margin: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 36, height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.outlineVariant,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        track.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.epilogue(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
+                          color: AppColors.onSurface,
+                        ),
+                      ),
+                      Text(
+                        track.artist,
+                        style: GoogleFonts.manrope(fontSize: 12, color: AppColors.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Divider(indent: 20, endIndent: 20),
+                if (playlists.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Text(
+                      'No playlists yet. Create one from the Playlists tab.',
+                      style: GoogleFonts.manrope(fontSize: 13, color: AppColors.onSurfaceVariant),
+                    ),
+                  )
+                else ...[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+                    child: Text(
+                      'ADD TO PLAYLIST',
+                      style: GoogleFonts.manrope(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.onSurfaceVariant,
+                        letterSpacing: 1.4,
+                      ),
+                    ),
+                  ),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 260),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: playlists.length,
+                      itemBuilder: (_, i) {
+                        final pl = playlists[i];
+                        final alreadyIn = pl.trackIds.contains(track.id);
+                        return ListTile(
+                          leading: Icon(
+                            alreadyIn ? Icons.check_circle_rounded : Icons.playlist_add_rounded,
+                            color: alreadyIn ? AppColors.primary : AppColors.onSurfaceVariant,
+                            size: 22,
+                          ),
+                          title: Text(
+                            pl.name,
+                            style: GoogleFonts.manrope(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                              color: alreadyIn ? AppColors.primary : AppColors.onSurface,
+                            ),
+                          ),
+                          subtitle: Text(
+                            '${pl.trackIds.length} tracks',
+                            style: GoogleFonts.manrope(fontSize: 11, color: AppColors.onSurfaceVariant),
+                          ),
+                          onTap: alreadyIn
+                              ? null
+                              : () async {
+                                  await playback.addTrackToPlaylist(pl.id, track.id);
+                                  if (!ctx.mounted) return;
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Added to "${pl.name}"')),
+                                  );
+                                },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 12),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      onLongPress: () => _showTrackMenu(context),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
@@ -459,7 +584,10 @@ class _TrackRow extends StatelessWidget {
               style: GoogleFonts.manrope(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.onSurfaceVariant),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.more_vert_rounded, color: AppColors.onSurfaceVariant, size: 18),
+            GestureDetector(
+              onTap: () => _showTrackMenu(context),
+              child: const Icon(Icons.more_vert_rounded, color: AppColors.onSurfaceVariant, size: 18),
+            ),
           ],
         ),
       ),
