@@ -3,6 +3,8 @@ import 'stream_discovery_models.dart';
 abstract class StreamSourceAdapter {
   String get provider;
 
+  Future<UserEntitlement> fetchEntitlement();
+
   Future<StreamDiscoveryResult> search(StreamDiscoveryRequest request);
 
   Future<Uri?> resolvePlaybackUri({

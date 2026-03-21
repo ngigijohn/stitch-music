@@ -57,11 +57,17 @@ class StreamDiscoveryResult {
 class UserEntitlement {
   final bool authenticated;
   final bool hasPremium;
+  final bool regionAllowed;
   final String providerUserId;
+  final String? statusMessage;
 
   const UserEntitlement({
     required this.authenticated,
     required this.hasPremium,
+    this.regionAllowed = true,
     required this.providerUserId,
+    this.statusMessage,
   });
+
+  bool get canAttemptPlayback => authenticated && hasPremium && regionAllowed;
 }

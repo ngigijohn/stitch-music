@@ -1,4 +1,5 @@
 import 'stream_discovery_models.dart';
+import 'stream_backend_gateway.dart';
 import 'stream_source_adapter.dart';
 
 /// Policy-compliant placeholder adapter for YouTube discovery.
@@ -8,29 +9,21 @@ import 'stream_source_adapter.dart';
 /// - No signature deciphering / scraping / reverse-engineering.
 /// - Playback URIs must come from licensed, official APIs with user entitlement.
 class YouTubeCompliantDiscoveryAdapter implements StreamSourceAdapter {
+  final StreamBackendGateway _gateway;
+
+  YouTubeCompliantDiscoveryAdapter({required StreamBackendGateway gateway}) : _gateway = gateway;
+
   @override
   String get provider => 'youtube';
 
   @override
-  Future<StreamDiscoveryResult> search(StreamDiscoveryRequest request) async {
-    // Discovery-only placeholder until official API auth + entitlement flow is wired.
-    if (request.query.trim().isEmpty) {
-      return const StreamDiscoveryResult(
-        error: DiscoveryError(
-          code: 'empty_query',
-          message: 'Search query is empty.',
-          userActionable: true,
-        ),
-      );
-    }
+  Future<UserEntitlement> fetchEntitlement() {
+    return _gateway.fetchEntitlement(provider: provider);
+  }
 
-    return const StreamDiscoveryResult(
-      error: DiscoveryError(
-        code: 'discovery_not_configured',
-        message: 'YouTube discovery requires official API credentials and consent flow.',
-        userActionable: true,
-      ),
-    );
+  @override
+  Future<StreamDiscoveryResult> search(StreamDiscoveryRequest request) async {
+    return _gateway.searchCatalog(provider: provider, request: request);
   }
 
   @override
@@ -38,11 +31,15 @@ class YouTubeCompliantDiscoveryAdapter implements StreamSourceAdapter {
     required StreamCandidate candidate,
     required UserEntitlement entitlement,
   }) async {
-    // Deliberately returns null until licensed API playback is implemented.
-    if (!entitlement.authenticated || !entitlement.hasPremium) {
+    if (!entitlement.canAttemptPlayback) {
       return null;
     }
-    return null;
+
+    return _gateway.resolvePlaybackUri(
+      provider: provider,
+      candidate: candidate,
+      entitlement: entitlement,
+    );
   }
 
   @override
@@ -50,7 +47,8 @@ class YouTubeCompliantDiscoveryAdapter implements StreamSourceAdapter {
     required StreamCandidate candidate,
     required UserEntitlement entitlement,
   }) async {
-    // Conservative by default: do not claim playback support until compliant path exists.
-    return false;
+    if (!entitlement.canAttemptPlayback) return false;
+    final uri = await resolvePlaybackUri(candidate: candidate, entitlement: entitlement);
+    return uri != null;
   }
 }

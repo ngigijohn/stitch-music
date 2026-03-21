@@ -4,6 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../models/music_models.dart';
 import '../services/playback_controller.dart';
+import 'online_search_screen.dart';
 import '../theme/app_theme.dart';
 import '../screens/now_playing_screen.dart';
 
@@ -95,6 +96,17 @@ class _LibraryScreenState extends State<LibraryScreen> {
                             icon: const Icon(Icons.refresh_rounded),
                             color: AppColors.primary,
                             tooltip: 'Rescan device',
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const OnlineSearchScreen()),
+                              );
+                            },
+                            icon: const Icon(Icons.cloud_queue_rounded),
+                            color: AppColors.primary,
+                            tooltip: 'Online search (YouTube)',
                           ),
                         ],
                       ),

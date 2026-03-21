@@ -1,3 +1,4 @@
+import 'stream_backend_gateway.dart';
 import 'stream_source_adapter.dart';
 import 'youtube_compliant_discovery_adapter.dart';
 
@@ -6,9 +7,10 @@ class StreamAdapterRegistry {
 
   StreamAdapterRegistry._(this._adapters);
 
-  factory StreamAdapterRegistry.defaultRegistry() {
+  factory StreamAdapterRegistry.defaultRegistry({StreamBackendGateway? gateway}) {
+    final StreamBackendGateway effectiveGateway = gateway ?? const NoopStreamBackendGateway();
     final adapters = <String, StreamSourceAdapter>{
-      'youtube': YouTubeCompliantDiscoveryAdapter(),
+      'youtube': YouTubeCompliantDiscoveryAdapter(gateway: effectiveGateway),
     };
     return StreamAdapterRegistry._(adapters);
   }
