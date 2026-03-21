@@ -365,6 +365,39 @@ class PlaybackController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> addTrackToPlaylist(String playlistId, String trackId) async {
+    final int idx = _playlists.indexWhere((p) => p.id == playlistId);
+    if (idx < 0) return;
+    final playlist = _playlists[idx];
+    if (playlist.trackIds.contains(trackId)) return;
+    _playlists[idx] = playlist.copyWith(trackIds: [...playlist.trackIds, trackId]);
+    await _savePlaylists();
+    notifyListeners();
+  }
+
+  Future<void> removeTrackFromPlaylist(String playlistId, String trackId) async {
+    final int idx = _playlists.indexWhere((p) => p.id == playlistId);
+    if (idx < 0) return;
+    final playlist = _playlists[idx];
+    final updated = playlist.trackIds.where((id) => id != trackId).toList();
+    _playlists[idx] = playlist.copyWith(trackIds: updated);
+    await _savePlaylists();
+    notifyListeners();
+  }
+
+  Future<void> reorderPlaylistTrack(String playlistId, int oldIndex, int newIndex) async {
+    final int idx = _playlists.indexWhere((p) => p.id == playlistId);
+    if (idx < 0) return;
+    final ids = List<String>.from(_playlists[idx].trackIds);
+    if (oldIndex < 0 || oldIndex >= ids.length) return;
+    if (newIndex > oldIndex) newIndex--;
+    final moved = ids.removeAt(oldIndex);
+    ids.insert(newIndex, moved);
+    _playlists[idx] = _playlists[idx].copyWith(trackIds: ids);
+    await _savePlaylists();
+    notifyListeners();
+  }
+
   Future<void> playPlaylist(String playlistId, {int startIndex = 0}) async {
     final tracks = tracksForPlaylist(playlistId);
     if (tracks.isEmpty) {
