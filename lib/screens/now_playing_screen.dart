@@ -16,7 +16,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     with TickerProviderStateMixin {
   final PlaybackController _playback = PlaybackController.instance;
 
-  bool _isFavorite = false;
   bool _isShuffle = false;
   int _repeatMode = 0;
 
@@ -94,7 +93,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                             const SizedBox(height: 8),
                             _buildAlbumArt(),
                             const SizedBox(height: 28),
-                            _buildTrackInfo(track.title, track.artist, track.album),
+                            _buildTrackInfo(track.title, track.artist, track.album, track.id),
                             const SizedBox(height: 24),
                             _buildProgress(progress),
                             const SizedBox(height: 22),
@@ -190,7 +189,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     );
   }
 
-  Widget _buildTrackInfo(String title, String artist, String album) {
+  Widget _buildTrackInfo(String title, String artist, String album, String trackId) {
     return Row(
       children: [
         Expanded(
@@ -224,18 +223,18 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
           ),
         ),
         GestureDetector(
-          onTap: () => setState(() => _isFavorite = !_isFavorite),
+          onTap: () => _playback.toggleFavorite(trackId),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             width: 44,
             height: 44,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: _isFavorite ? AppColors.primary.withValues(alpha: 0.15) : Colors.transparent,
+              color: _playback.isFavorite(trackId) ? AppColors.primary.withValues(alpha: 0.15) : Colors.transparent,
             ),
             child: Icon(
-              _isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-              color: _isFavorite ? AppColors.primary : AppColors.onSurfaceVariant,
+              _playback.isFavorite(trackId) ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+              color: _playback.isFavorite(trackId) ? AppColors.primary : AppColors.onSurfaceVariant,
             ),
           ),
         ),
