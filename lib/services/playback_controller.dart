@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -18,6 +19,7 @@ class PlaybackController extends ChangeNotifier {
 
   final List<Track> _library = [];
   final List<Track> _queue = [];
+  final List<Playlist> _playlists = [];
 
   bool _initialized = false;
   bool _isScanning = false;
@@ -37,6 +39,7 @@ class PlaybackController extends ChangeNotifier {
 
   List<Track> get library => List.unmodifiable(_library);
   List<Track> get queue => List.unmodifiable(_queue);
+  List<Playlist> get playlists => List.unmodifiable(_playlists);
   bool get isScanning => _isScanning;
   String? get scanError => _scanError;
   PermissionStatus get permissionStatus => _permissionStatus;
@@ -74,6 +77,7 @@ class PlaybackController extends ChangeNotifier {
     });
 
     await scanDeviceLibrary();
+    await _restorePlaylists();
     await _restoreSessionState();
   }
 
@@ -244,6 +248,73 @@ class PlaybackController extends ChangeNotifier {
     notifyListeners();
   }
 
+  List<Track> tracksForPlaylist(String playlistId) {
+    final Playlist? playlist = _playlists.cast<Playlist?>().firstWhere(
+          (p) => p?.id == playlistId,
+          orElse: () => null,
+        );
+    if (playlist == null) return const <Track>[];
+
+    final List<Track> tracks = <Track>[];
+    for (final id in playlist.trackIds) {
+      final int idx = _library.indexWhere((t) => t.id == id);
+      if (idx >= 0) tracks.add(_library[idx]);
+    }
+    return tracks;
+  }
+
+  Future<void> createPlaylistFromQueue(String name) async {
+    final String trimmed = name.trim();
+    if (trimmed.isEmpty || _queue.isEmpty) return;
+
+    final String id = 'pl_${DateTime.now().millisecondsSinceEpoch}';
+    final List<String> ids = _queue.map((t) => t.id).toSet().toList();
+    final Playlist playlist = Playlist(
+      id: id,
+      name: trimmed,
+      trackIds: ids,
+      createdAt: DateTime.now(),
+    );
+
+    _playlists.insert(0, playlist);
+    await _savePlaylists();
+    notifyListeners();
+  }
+
+  Future<void> renamePlaylist(String playlistId, String newName) async {
+    final String trimmed = newName.trim();
+    if (trimmed.isEmpty) return;
+
+    final int idx = _playlists.indexWhere((p) => p.id == playlistId);
+    if (idx < 0) return;
+
+    _playlists[idx] = _playlists[idx].copyWith(name: trimmed);
+    await _savePlaylists();
+    notifyListeners();
+  }
+
+  Future<void> deletePlaylist(String playlistId) async {
+    _playlists.removeWhere((p) => p.id == playlistId);
+    await _savePlaylists();
+    notifyListeners();
+  }
+
+  Future<void> playPlaylist(String playlistId, {int startIndex = 0}) async {
+    final tracks = tracksForPlaylist(playlistId);
+    if (tracks.isEmpty) {
+      _scanError = 'Playlist has no available tracks on this device.';
+      notifyListeners();
+      return;
+    }
+
+    _queue
+      ..clear()
+      ..addAll(tracks);
+
+    final int safeStart = startIndex.clamp(0, tracks.length - 1);
+    await playAtIndex(safeStart);
+  }
+
   Future<void> _handleTrackCompleted() async {
     final int next = _currentIndex + 1;
     if (next < _queue.length) {
@@ -270,6 +341,44 @@ class PlaybackController extends ChangeNotifier {
       await prefs.setInt('position_ms', _position.inMilliseconds);
     } catch (_) {
       // Keep runtime resilient if persistence fails.
+    }
+  }
+
+  Future<void> _savePlaylists() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final payload = jsonEncode(_playlists.map((p) => p.toMap()).toList());
+      await prefs.setString('playlists_json', payload);
+    } catch (_) {
+      // Keep runtime resilient if persistence fails.
+    }
+  }
+
+  Future<void> _restorePlaylists() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String raw = prefs.getString('playlists_json') ?? '';
+      if (raw.isEmpty) return;
+
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) return;
+
+      final restored = <Playlist>[];
+      for (final item in decoded) {
+        if (item is Map<String, dynamic>) {
+          restored.add(Playlist.fromMap(item));
+          continue;
+        }
+        if (item is Map) {
+          restored.add(Playlist.fromMap(item.map((k, v) => MapEntry(k.toString(), v))));
+        }
+      }
+
+      _playlists
+        ..clear()
+        ..addAll(restored);
+    } catch (_) {
+      // Restore is best-effort.
     }
   }
 
