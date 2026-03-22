@@ -621,4 +621,35 @@ class PlaybackController extends ChangeNotifier {
     await _playerStateSub?.cancel();
     await _player.dispose();
   }
+
+  @visibleForTesting
+  void debugSeedQueueForTests({
+    required List<Track> queue,
+    int currentIndex = 0,
+    bool isPlaying = false,
+  }) {
+    _queue
+      ..clear()
+      ..addAll(queue);
+    _currentIndex = queue.isEmpty ? -1 : currentIndex.clamp(0, queue.length - 1);
+    _position = Duration.zero;
+    final track = currentTrack;
+    _duration = track == null
+        ? Duration.zero
+        : Duration(milliseconds: track.durationMs > 0 ? track.durationMs : 240000);
+    if (!isPlaying) {
+      _player.pause();
+    }
+    notifyListeners();
+  }
+
+  @visibleForTesting
+  void debugResetStateForTests() {
+    _queue.clear();
+    _currentIndex = -1;
+    _position = Duration.zero;
+    _duration = Duration.zero;
+    _scanError = null;
+    notifyListeners();
+  }
 }

@@ -110,7 +110,7 @@ Acceptance criteria:
 
 ### Phase 3: Finish Settings As The App Control Center
 
-Status: In progress
+Status: Completed and merged into `sprint/current`
 
 Objective: expand Settings beyond EQ so it can host the next wave of product controls.
 
@@ -130,14 +130,7 @@ Started in this phase:
 - Added semantics labels/hints to critical controls in Settings, Home quick actions, and Now Playing controls.
 - Added widget coverage for settings preference persistence (locale, high contrast, text scale).
 - Added explicit semantics assertions in widget tests and added RTL + large-text settings resilience coverage.
-
-Next in this phase:
-
-- Add semantics-first audits for key controls on Home, Now Playing, and Settings.
-- Add explicit widget assertions for semantics discoverability in Home and Now Playing.
-- Extend those semantics assertions deeper into Now Playing sheets and queue actions.
-- Run RTL and large-text layout passes on primary screens and fix overflow/focus issues.
-- Add widget coverage for locale/high-contrast/text-scale persistence flows.
+- Added explicit Now Playing semantics coverage for key playback and bottom-bar actions.
 
 Primary files:
 
