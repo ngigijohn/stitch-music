@@ -71,3 +71,21 @@ class UserEntitlement {
 
   bool get canAttemptPlayback => authenticated && hasPremium && regionAllowed;
 }
+
+class StreamAuthSession {
+  final String provider;
+  final String providerUserId;
+  final String accessToken;
+  final String? refreshToken;
+  final DateTime expiresAt;
+
+  const StreamAuthSession({
+    required this.provider,
+    required this.providerUserId,
+    required this.accessToken,
+    this.refreshToken,
+    required this.expiresAt,
+  });
+
+  bool get isExpired => DateTime.now().isAfter(expiresAt);
+}

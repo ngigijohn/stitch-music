@@ -4,7 +4,7 @@ import 'package:stitch_music/services/streaming/stream_mock_backend_gateway.dart
 
 void main() {
   test('mock backend resolves playback URI for entitled candidate', () async {
-    const gateway = MockYouTubeBackendGateway();
+    final gateway = MockYouTubeBackendGateway();
     const entitlement = UserEntitlement(
       authenticated: true,
       hasPremium: true,
@@ -30,7 +30,7 @@ void main() {
   });
 
   test('mock backend fails closed when not entitled', () async {
-    const gateway = MockYouTubeBackendGateway();
+    final gateway = MockYouTubeBackendGateway();
     const entitlement = UserEntitlement(
       authenticated: false,
       hasPremium: false,

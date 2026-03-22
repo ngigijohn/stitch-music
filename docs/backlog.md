@@ -13,6 +13,7 @@ Last updated: 2026-03-22
 
 - Phase 4 has started: online discovery results now run through entitlement-gated URI resolution and queue insertion flow
 - Phase 4 now includes a gated `Play` path from online results that only executes when entitlement + URI resolution succeed
+- Phase 4 now includes auth/session lifecycle abstraction and production backend contract wiring that remains fail-closed by default
 - Online discovery currently runs in demo or fail-closed mode; official auth, entitlement refresh, and playback URI resolution remain pending
 - Recently merged feature streams (offline cache, audio effects, export/share, insights, i18n) need an end-to-end UX completion pass and regression coverage
 

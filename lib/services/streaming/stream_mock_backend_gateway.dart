@@ -1,18 +1,45 @@
 import 'dart:math';
 
 import 'stream_backend_gateway.dart';
+import 'stream_auth_service.dart';
 import 'stream_discovery_models.dart';
 
 class MockYouTubeBackendGateway implements StreamBackendGateway {
-  const MockYouTubeBackendGateway();
+  final StreamAuthService _auth;
+
+  MockYouTubeBackendGateway({StreamAuthService? authService})
+      : _auth = authService ??
+            InMemoryStreamAuthService(
+              seedSessions: {
+                'youtube': StreamAuthSession(
+                  provider: 'youtube',
+                  providerUserId: 'demo-user',
+                  accessToken: 'demo-access-token',
+                  refreshToken: 'demo-refresh-token',
+                  expiresAt: DateTime.now().add(const Duration(hours: 2)),
+                ),
+              },
+            );
 
   @override
   Future<UserEntitlement> fetchEntitlement({required String provider}) async {
-    return const UserEntitlement(
+    final authState = await _auth.refreshState(provider: provider);
+    if (!authState.canCallEntitledApis || authState.session == null) {
+      return UserEntitlement(
+        authenticated: false,
+        hasPremium: false,
+        regionAllowed: false,
+        providerUserId: authState.session?.providerUserId ?? '',
+        statusMessage: authState.message ??
+            'Demo auth session unavailable; playback remains fail-closed.',
+      );
+    }
+
+    return UserEntitlement(
       authenticated: true,
       hasPremium: true,
       regionAllowed: true,
-      providerUserId: 'demo-user',
+      providerUserId: authState.session!.providerUserId,
       statusMessage: 'Demo mode is enabled. Results are mocked for UI testing only.',
     );
   }

@@ -163,6 +163,9 @@ Started in this phase:
 - Added playback-controller queue insertion path for resolved stream candidates.
 - Added demo backend URI resolution for entitled demo mode while keeping production default fail-closed.
 - Added explicit `Play` action from online results, still gated by entitlement + URI resolution before playback starts.
+- Added stream auth/session lifecycle abstraction with refresh-state handling for provider adapters.
+- Added production backend contract gateway that stays fail-closed until official provider endpoints are configured and integrated.
+- Added tests for auth-state transitions and production fail-closed UI messaging.
 
 Primary files:
 

@@ -9,7 +9,12 @@ class StreamAdapterRegistry {
   StreamAdapterRegistry._(this._adapters);
 
   factory StreamAdapterRegistry.defaultRegistry({StreamBackendGateway? gateway}) {
-    final StreamBackendGateway effectiveGateway = gateway ?? const NoopStreamBackendGateway();
+    final StreamBackendGateway effectiveGateway = gateway ??
+        const ProductionContractStreamBackendGateway(
+          providerContracts: {
+            'youtube': ProviderBackendContract(),
+          },
+        );
     final adapters = <String, StreamSourceAdapter>{
       'youtube': YouTubeCompliantDiscoveryAdapter(gateway: effectiveGateway),
     };
@@ -17,7 +22,7 @@ class StreamAdapterRegistry {
   }
 
   factory StreamAdapterRegistry.demoRegistry() {
-    return StreamAdapterRegistry.defaultRegistry(gateway: const MockYouTubeBackendGateway());
+    return StreamAdapterRegistry.defaultRegistry(gateway: MockYouTubeBackendGateway());
   }
 
   StreamSourceAdapter? byProvider(String provider) => _adapters[provider];
