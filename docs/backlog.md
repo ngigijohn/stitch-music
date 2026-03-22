@@ -4,9 +4,20 @@ Last updated: 2026-03-22
 
 ## Current Focus
 
-- Functional completion pass for dormant buttons, menus, and placeholder screens
 - Streaming backend hardening for policy-compliant remote playback
-- Validation and release-readiness gates
+- Ongoing regression coverage as new features land
+
+## Phase 6 Completed
+
+- Widget tests for HomeScreen quick actions sheet navigation (Settings, Cache, Insights, Profile)
+- Widget tests for HomeScreen Daily Mixes "See All" navigation
+- Widget tests for NowPlayingScreen track actions sheet (Insights, Settings navigation)
+- Widget tests for NowPlayingScreen Devices and Volume sheets
+- Integration tests for CacheService offline mode and track pinning lifecycle
+- Integration tests for locale switching via AppPreferencesService and Settings screen
+- Integration tests for online search demo mode, production fail-closed, and entitled search results
+- Added `debugResetForTests()` to CacheService for clean test isolation
+- CI hardened: Flutter version pinned to 3.32.x, job timeouts, coverage upload, `--fatal-infos` on analyze
 
 ## In Progress
 
@@ -52,6 +63,7 @@ Last updated: 2026-03-22
 - Phase 3 completed: settings is now the app control center with persisted locale, high contrast, text scaling, cache linkage, and accessibility test coverage
 - Phase 4 completed: entitlement-gated queue/play actions, auth lifecycle abstraction, production backend contract transport, and fail-closed/entitled path tests
 - Phase 5 completed: localized Home, Now Playing, Insights, Playlists, Online Search, and EQ sheet copy; added RTL and large-text regression coverage; deepened semantics on playback sheets and sliders; regenerated l10n outputs; and aligned widget tests with localized app bootstrapping
+- Phase 6 completed: widget tests for HomeScreen quick-actions and Daily-Mixes navigation; widget tests for NowPlayingScreen track-actions, Devices, and Volume sheets; integration tests for CacheService offline/pin flow, locale switching, and online search entitlement paths; CI hardened with version pin, timeouts, coverage, and fatal-infos analyze gate
 - QA baseline tests (model mapping, theme contract, app shell smoke)
 - Branch workflow and CI scaffolding for parallel agents
 

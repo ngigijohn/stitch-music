@@ -224,6 +224,8 @@ Acceptance criteria:
 
 ### Phase 6: Validation And Release Gates
 
+Status: Completed and merged into `sprint/current`
+
 Objective: protect the larger merged feature set from regressions.
 
 Work:
@@ -236,15 +238,15 @@ Work:
    - online discovery to entitled playback (when backend is available)
 3. Add CI release gates for `flutter analyze`, `flutter test`, and debug build.
 
-Primary files:
+Completed in this phase:
 
-- `test/`
-- `.github/workflows/`
-
-Acceptance criteria:
-
-- Newly wired buttons are covered by tests.
-- Merge confidence does not depend on manual smoke testing alone.
+- Added `test/home_screen_actions_test.dart`: quick-actions sheet and Daily Mixes "See All" navigation.
+- Added `test/now_playing_actions_test.dart`: track actions sheet, Devices sheet, and Volume sheet.
+- Added `test/integration/cache_offline_flow_test.dart`: offline mode toggle + track pin/unpin with persistence.
+- Added `test/integration/locale_switching_test.dart`: locale persistence and Settings dropdown flow.
+- Added `test/integration/online_search_entitled_test.dart`: demo mode, production fail-closed, and entitled search results.
+- Added `CacheService.debugResetForTests()` following the AppPreferencesService pattern.
+- Hardened CI: Flutter version pinned to 3.32.x, timeouts, caching, `--fatal-infos` analyze gate, `--coverage` test, coverage artifact upload.
 
 ## Suggested Execution Order
 
