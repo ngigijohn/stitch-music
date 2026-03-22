@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/music_models.dart';
+import 'cache_service.dart';
 
 enum QueueRepeatMode { none, one, all }
 
@@ -101,6 +102,7 @@ class PlaybackController extends ChangeNotifier {
       notifyListeners();
     });
 
+    await CacheService.instance.init();
     await scanDeviceLibrary();
     await _restorePlaylists();
     await _restoreSessionState();
@@ -196,7 +198,6 @@ class PlaybackController extends ChangeNotifier {
     try {
       _currentIndex = index;
       _position = Duration.zero;
-      _addToRecents(track);
       _addToRecents(track);
       final uri = source.startsWith('content://') ? Uri.parse(source) : Uri.file(source);
       await _player.setAudioSource(AudioSource.uri(uri));
