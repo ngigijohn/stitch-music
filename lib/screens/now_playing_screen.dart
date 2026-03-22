@@ -132,17 +132,20 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
             icon: const Icon(Icons.expand_more_rounded, size: 30),
             color: AppColors.onSurface,
           ),
-          const Spacer(),
-          Text(
-            AppLocalizations.of(context)!.nowPlayingFromDevice,
-            style: GoogleFonts.manrope(
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              color: AppColors.onSurfaceVariant,
-              letterSpacing: 2.5,
+          Expanded(
+            child: Text(
+              AppLocalizations.of(context)!.nowPlayingFromDevice,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.manrope(
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                color: AppColors.onSurfaceVariant,
+                letterSpacing: 2.5,
+              ),
             ),
           ),
-          const Spacer(),
           IconButton(
             onPressed: () => _showTrackActionsSheet(context),
             tooltip: AppLocalizations.of(context)!.nowPlayingTrackActionsTooltip,
@@ -260,16 +263,20 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
 
     return Column(
       children: [
-        SliderTheme(
-          data: SliderTheme.of(context).copyWith(
-            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-            activeTrackColor: AppColors.primary,
-            inactiveTrackColor: AppColors.outlineVariant.withValues(alpha: 0.4),
-            trackHeight: 3,
-          ),
-          child: Slider(
-            value: progress.clamp(0.0, 1.0),
-            onChanged: _playback.seekToFraction,
+        Semantics(
+          label: AppLocalizations.of(context)!.nowPlayingSeekLabel,
+          value: '${_fmt(position)} / ${_fmt(duration)}',
+          child: SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+              activeTrackColor: AppColors.primary,
+              inactiveTrackColor: AppColors.outlineVariant.withValues(alpha: 0.4),
+              trackHeight: 3,
+            ),
+            child: Slider(
+              value: progress.clamp(0.0, 1.0),
+              onChanged: _playback.seekToFraction,
+            ),
           ),
         ),
         Padding(
@@ -618,12 +625,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                 Text(AppLocalizations.of(context)!.nowPlayingVolumeSheetTitle, style: GoogleFonts.epilogue(fontSize: 18, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 6),
                 Text(AppLocalizations.of(context)!.nowPlayingVolumeSheetSubtitle, style: GoogleFonts.manrope(fontSize: 12, color: AppColors.onSurfaceVariant)),
-                Slider(
-                  value: _playback.volume,
-                  onChanged: (value) async {
-                    await _playback.setVolume(value);
-                    setSheetState(() {});
-                  },
+                Semantics(
+                  label: AppLocalizations.of(context)!.nowPlayingVolumeSheetTitle,
+                  hint: AppLocalizations.of(context)!.nowPlayingVolumeSheetSubtitle,
+                  value: '${(_playback.volume * 100).round()}%',
+                  child: Slider(
+                    value: _playback.volume,
+                    onChanged: (value) async {
+                      await _playback.setVolume(value);
+                      setSheetState(() {});
+                    },
+                  ),
                 ),
                 Align(
                   alignment: Alignment.centerRight,
@@ -652,15 +664,20 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                 Text(AppLocalizations.of(context)!.nowPlayingSpeedSheetTitle, style: GoogleFonts.epilogue(fontSize: 18, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 6),
                 Text(AppLocalizations.of(context)!.nowPlayingSpeedSheetSubtitle, style: GoogleFonts.manrope(fontSize: 12, color: AppColors.onSurfaceVariant)),
-                Slider(
-                  min: 0.5,
-                  max: 2.0,
-                  divisions: 6,
-                  value: _playback.speed,
-                  onChanged: (value) async {
-                    await _playback.setSpeed(value);
-                    setSheetState(() {});
-                  },
+                Semantics(
+                  label: AppLocalizations.of(context)!.nowPlayingSpeedSheetTitle,
+                  hint: AppLocalizations.of(context)!.nowPlayingSpeedSheetSubtitle,
+                  value: '${_playback.speed.toStringAsFixed(2)}x',
+                  child: Slider(
+                    min: 0.5,
+                    max: 2.0,
+                    divisions: 6,
+                    value: _playback.speed,
+                    onChanged: (value) async {
+                      await _playback.setSpeed(value);
+                      setSheetState(() {});
+                    },
+                  ),
                 ),
                 Align(
                   alignment: Alignment.centerRight,
@@ -927,6 +944,7 @@ class _ActionSheetFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final maxHeight = MediaQuery.of(context).size.height * 0.75;
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 24),
       decoration: BoxDecoration(
@@ -934,21 +952,28 @@ class _ActionSheetFrame extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.45)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 12),
-          Container(
-            width: 36,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.outlineVariant,
-              borderRadius: BorderRadius.circular(2),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: maxHeight),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          child,
-        ],
+            const SizedBox(height: 8),
+            Flexible(
+              child: SingleChildScrollView(
+                child: child,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -969,20 +994,25 @@ class _ActionSheetTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Container(
-        width: 42,
-        height: 42,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: AppColors.primary.withValues(alpha: 0.14),
+    return Semantics(
+      button: true,
+      label: title,
+      hint: subtitle,
+      child: ListTile(
+        leading: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: AppColors.primary.withValues(alpha: 0.14),
+          ),
+          child: Icon(icon, color: AppColors.primary),
         ),
-        child: Icon(icon, color: AppColors.primary),
+        title: Text(title, style: GoogleFonts.manrope(fontWeight: FontWeight.w800)),
+        subtitle: Text(subtitle, style: GoogleFonts.manrope(fontSize: 12, color: AppColors.onSurfaceVariant)),
+        trailing: const Icon(Icons.chevron_right_rounded),
+        onTap: onTap,
       ),
-      title: Text(title, style: GoogleFonts.manrope(fontWeight: FontWeight.w800)),
-      subtitle: Text(subtitle, style: GoogleFonts.manrope(fontSize: 12, color: AppColors.onSurfaceVariant)),
-      trailing: const Icon(Icons.chevron_right_rounded),
-      onTap: onTap,
     );
   }
 }
@@ -1044,7 +1074,7 @@ class _EqPanelState extends State<_EqPanel> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Equalizer',
+                    AppLocalizations.of(context)!.settingsEqTitle,
                     style: GoogleFonts.epilogue(
                       fontWeight: FontWeight.w800,
                       fontSize: 18,
@@ -1061,7 +1091,7 @@ class _EqPanelState extends State<_EqPanel> {
                 IconButton(
                   icon: const Icon(Icons.tune_rounded, size: 20),
                   color: AppColors.onSurfaceVariant,
-                  tooltip: 'Full EQ settings',
+                  tooltip: AppLocalizations.of(context)!.nowPlayingOpenSettings,
                   onPressed: () {
                     Navigator.pop(context);
                     Navigator.push(
@@ -1079,7 +1109,7 @@ class _EqPanelState extends State<_EqPanel> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                _eq.isEnabled ? _eq.activePreset.name : 'Off',
+                _eq.isEnabled ? _eq.activePreset.name : AppLocalizations.of(context)!.settingsDisabledLabel,
                 style: GoogleFonts.manrope(
                   fontSize: 12,
                   color: AppColors.primary,
@@ -1138,25 +1168,29 @@ class _EqPanelState extends State<_EqPanel> {
                               : AppColors.onSurfaceVariant,
                         ),
                       ),
-                      RotatedBox(
-                        quarterTurns: 3,
-                        child: SliderTheme(
-                          data: SliderTheme.of(context).copyWith(
-                            trackHeight: 3,
-                            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
-                            activeTrackColor: AppColors.primary,
-                            inactiveTrackColor: AppColors.outlineVariant.withValues(alpha: 0.4),
-                          ),
-                          child: SizedBox(
-                            width: 100,
-                            child: Slider(
-                              value: gain.clamp(-12.0, 12.0),
-                              min: -12,
-                              max: 12,
-                              divisions: 24,
-                              onChanged: _eq.isEnabled
-                                  ? (v) => _eq.setCustomBand(i, v)
-                                  : null,
+                      Semantics(
+                        label: '${AppLocalizations.of(context)!.settingsEqTitle} ${kEqBandLabels[i]}',
+                        value: gain.round().toString(),
+                        child: RotatedBox(
+                          quarterTurns: 3,
+                          child: SliderTheme(
+                            data: SliderTheme.of(context).copyWith(
+                              trackHeight: 3,
+                              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
+                              activeTrackColor: AppColors.primary,
+                              inactiveTrackColor: AppColors.outlineVariant.withValues(alpha: 0.4),
+                            ),
+                            child: SizedBox(
+                              width: 100,
+                              child: Slider(
+                                value: gain.clamp(-12.0, 12.0),
+                                min: -12,
+                                max: 12,
+                                divisions: 24,
+                                onChanged: _eq.isEnabled
+                                    ? (v) => _eq.setCustomBand(i, v)
+                                    : null,
+                              ),
                             ),
                           ),
                         ),
@@ -1179,7 +1213,7 @@ class _EqPanelState extends State<_EqPanel> {
             onPressed: _eq.resetToFlat,
             icon: const Icon(Icons.refresh_rounded, size: 16),
             label: Text(
-              'Reset to Flat',
+              AppLocalizations.of(context)!.settingsResetEq,
               style: GoogleFonts.manrope(fontSize: 12, fontWeight: FontWeight.w700),
             ),
             style: TextButton.styleFrom(

@@ -121,6 +121,7 @@
   ,"@homeSearchResultCount": {"placeholders": {"count": {"type": "int"}}}
   ,"homeDailyMixesTitle": "Daily Mixes"
   ,"homeSeeAll": "See All"
+  ,"homePlayMore": "Play more"
   ,"homeNewReleasesTitle": "New Releases"
   ,"homeAlbumOfWeek": "Album of the Week"
   ,"homeExploreAlbum": "Explore Album"
@@ -132,6 +133,7 @@
   ,"nowPlayingRemoveFromFavorites": "Remove from favorites"
   ,"nowPlayingPause": "Pause playback"
   ,"nowPlayingResumeSemantic": "Resume playback"
+  ,"nowPlayingSeekLabel": "Playback position"
   ,"nowPlayingVolumeLabel": "Volume"
   ,"nowPlayingSpeedLabel": "Speed"
   ,"nowPlayingEqLabel": "EQ"
@@ -215,6 +217,8 @@
   ,"playlistsQueueEmpty": "Queue is empty. Play something first."
   ,"playlistsSaved": "Saved \"{name}\""
   ,"@playlistsSaved": {"placeholders": {"name": {"type": "String"}}}
+  ,"playlistsDefaultName": "My Playlist {time}"
+  ,"@playlistsDefaultName": {"placeholders": {"time": {"type": "String"}}}
   ,"playlistsRenameTitle": "Rename Playlist"
   ,"onlineSearchTitle": "Online Search (YouTube)"
   ,"onlineSearchDiscoveryNote": "Discovery only. Playback stays blocked until official API auth and entitlement are available."

@@ -185,7 +185,7 @@ Acceptance criteria:
 
 ### Phase 5: Finish Accessibility And Internationalization Rollout
 
-Status: In progress. Primary localization coverage is complete for the main user flows; RTL validation, large-text audits, and a deeper semantics/focus pass remain open.
+Status: Completed and merged into `sprint/current`
 
 Objective: complete the work that J started so the app is globally usable and internally consistent.
 
@@ -196,18 +196,15 @@ Work:
 3. Implement RTL validation and layout fixes.
 4. Add semantics, focus behavior, text scaling checks, and high-contrast support.
 
-Started in this phase:
+Completed in this phase:
 
 - Localized remaining primary screens and supporting UI copy across Home, Now Playing, Insights, Playlists, and Online Search.
+- Closed missed localization gaps in Home cards, playlist default naming, and Now Playing EQ-sheet copy.
 - Added localized strings for new dialogs, snackbars, tooltips, banners, and online-search entitlement states.
 - Regenerated generated localization outputs for English, Spanish, French, and German.
 - Updated widget-test app bootstrapping so localized screens run under test with localization delegates enabled.
-
-Deferred follow-up now tracked in backlog:
-
-- RTL layout validation and any resulting screen fixes.
-- Large-text resilience audit beyond the existing Settings coverage.
-- Deeper semantics and focus-behavior pass on playback-heavy surfaces.
+- Added RTL and large-text regression coverage on primary flows beyond the earlier Settings-only coverage.
+- Deepened semantics and focus coverage on playback-heavy surfaces, including action-sheet rows and slider controls.
 
 Primary files:
 

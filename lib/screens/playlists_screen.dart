@@ -33,8 +33,9 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
       return;
     }
 
+    final timestamp = '${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}';
     final TextEditingController ctrl = TextEditingController(
-      text: 'My Playlist ${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}',
+      text: AppLocalizations.of(context)!.playlistsDefaultName(timestamp),
     );
 
     final String? name = await showDialog<String>(

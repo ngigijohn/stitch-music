@@ -197,7 +197,7 @@ class _OnlineDiscoverySection extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Online Discovery',
+                        AppLocalizations.of(context)!.homeOnlineDiscoveryTitle,
                         style: GoogleFonts.epilogue(
                           fontSize: 22,
                           fontWeight: FontWeight.w900,
@@ -207,7 +207,7 @@ class _OnlineDiscoverySection extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Explore the YouTube search experience in demo mode while official API integration stays fail-closed.',
+                        AppLocalizations.of(context)!.homeOnlineDiscoveryDescription,
                         style: GoogleFonts.manrope(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -346,18 +346,29 @@ class _TopAppBar extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Row(
           children: [
-            Icon(Icons.search_rounded, color: AppColors.primary, size: 26),
-            const Spacer(),
-            Text(
-              AppLocalizations.of(context)!.homeAppBarTitle,
-              style: GoogleFonts.epilogue(
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-                color: AppColors.primary,
-                letterSpacing: -0.5,
+            const SizedBox(
+              width: 38,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Icon(Icons.search_rounded, color: AppColors.primary, size: 26),
               ),
             ),
-            const Spacer(),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                AppLocalizations.of(context)!.homeAppBarTitle,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.epilogue(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.primary,
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
             GestureDetector(
               onTap: onQuickActionsTap,
               child: Semantics(
@@ -721,7 +732,7 @@ class _CompactEmptyRecentCard extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          'Play more',
+          AppLocalizations.of(context)!.homePlayMore,
           style: GoogleFonts.manrope(
             fontSize: 12,
             fontWeight: FontWeight.w700,

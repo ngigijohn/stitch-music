@@ -326,6 +326,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeSeeAll => 'See All';
 
   @override
+  String get homePlayMore => 'Play more';
+
+  @override
   String get homeNewReleasesTitle => 'New Releases';
 
   @override
@@ -357,6 +360,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nowPlayingResumeSemantic => 'Resume playback';
+
+  @override
+  String get nowPlayingSeekLabel => 'Playback position';
 
   @override
   String get nowPlayingVolumeLabel => 'Volume';
@@ -612,6 +618,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String playlistsSaved(String name) {
     return 'Saved \"$name\"';
+  }
+
+  @override
+  String playlistsDefaultName(String time) {
+    return 'My Playlist $time';
   }
 
   @override

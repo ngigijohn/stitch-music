@@ -18,6 +18,10 @@ void main() {
       expect(l10n.appTitle, 'Stitch Music');
       expect(l10n.navLibrary, isNotEmpty);
       expect(l10n.profileSettings, isNotEmpty);
+      expect(l10n.homeOnlineDiscoveryTitle, isNotEmpty);
+      expect(l10n.homePlayMore, isNotEmpty);
+      expect(l10n.nowPlayingSeekLabel, isNotEmpty);
+      expect(l10n.playlistsDefaultName('10:30'), isNotEmpty);
     }
   });
 }

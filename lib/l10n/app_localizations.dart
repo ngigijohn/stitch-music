@@ -696,6 +696,12 @@ abstract class AppLocalizations {
   /// **'See All'**
   String get homeSeeAll;
 
+  /// No description provided for @homePlayMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Play more'**
+  String get homePlayMore;
+
   /// No description provided for @homeNewReleasesTitle.
   ///
   /// In en, this message translates to:
@@ -761,6 +767,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Resume playback'**
   String get nowPlayingResumeSemantic;
+
+  /// No description provided for @nowPlayingSeekLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback position'**
+  String get nowPlayingSeekLabel;
 
   /// No description provided for @nowPlayingVolumeLabel.
   ///
@@ -1229,6 +1241,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saved \"{name}\"'**
   String playlistsSaved(String name);
+
+  /// No description provided for @playlistsDefaultName.
+  ///
+  /// In en, this message translates to:
+  /// **'My Playlist {time}'**
+  String playlistsDefaultName(String time);
 
   /// No description provided for @playlistsRenameTitle.
   ///
