@@ -116,6 +116,9 @@ void main() {
       await cache.pinTrack('track_1');
 
       expect(() => cache.pinnedIds.add('intruder'), throwsUnsupportedError);
+      // Underlying set is unchanged after the failed modification attempt.
+      expect(cache.pinnedIds, {'track_1'});
+      expect(cache.pinnedCount, 1);
     });
   });
 
