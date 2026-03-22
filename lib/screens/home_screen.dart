@@ -359,18 +359,22 @@ class _TopAppBar extends StatelessWidget {
             const Spacer(),
             GestureDetector(
               onTap: onQuickActionsTap,
-              child: Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.surfaceContainerHigh,
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                    width: 1.5,
+              child: Semantics(
+                label: 'Open quick actions',
+                button: true,
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.surfaceContainerHigh,
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      width: 1.5,
+                    ),
                   ),
+                  child: const Icon(Icons.person_rounded, size: 20, color: AppColors.primary),
                 ),
-                child: const Icon(Icons.person_rounded, size: 20, color: AppColors.primary),
               ),
             ),
           ],

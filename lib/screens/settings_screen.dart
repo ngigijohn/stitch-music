@@ -75,36 +75,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: const Icon(Icons.language_rounded, color: AppColors.primary),
                   title: l10n.settingsLanguageLabel,
                   subtitle: _languageSubtitle(l10n),
-                  trailing: DropdownButton<String?>(
-                    value: _prefs.localeCode,
-                    underline: const SizedBox.shrink(),
-                    dropdownColor: AppColors.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(16),
-                    onChanged: (value) {
-                      _prefs.setLocaleCode(value);
-                    },
-                    items: [
-                      DropdownMenuItem<String?>(
-                        value: null,
-                        child: Text(l10n.settingsLanguageSystem),
-                      ),
-                      DropdownMenuItem<String?>(
-                        value: 'en',
-                        child: Text(l10n.settingsLanguageEnglish),
-                      ),
-                      DropdownMenuItem<String?>(
-                        value: 'es',
-                        child: Text(l10n.settingsLanguageSpanish),
-                      ),
-                      DropdownMenuItem<String?>(
-                        value: 'fr',
-                        child: Text(l10n.settingsLanguageFrench),
-                      ),
-                      DropdownMenuItem<String?>(
-                        value: 'de',
-                        child: Text(l10n.settingsLanguageGerman),
-                      ),
-                    ],
+                  trailing: Semantics(
+                    label: l10n.settingsLanguageLabel,
+                    button: true,
+                    child: DropdownButton<String?>(
+                      key: const Key('settings_language_dropdown'),
+                      value: _prefs.localeCode,
+                      underline: const SizedBox.shrink(),
+                      dropdownColor: AppColors.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(16),
+                      onChanged: (value) {
+                        _prefs.setLocaleCode(value);
+                      },
+                      items: [
+                        DropdownMenuItem<String?>(
+                          value: null,
+                          child: Text(l10n.settingsLanguageSystem),
+                        ),
+                        DropdownMenuItem<String?>(
+                          value: 'en',
+                          child: Text(l10n.settingsLanguageEnglish),
+                        ),
+                        DropdownMenuItem<String?>(
+                          value: 'es',
+                          child: Text(l10n.settingsLanguageSpanish),
+                        ),
+                        DropdownMenuItem<String?>(
+                          value: 'fr',
+                          child: Text(l10n.settingsLanguageFrench),
+                        ),
+                        DropdownMenuItem<String?>(
+                          value: 'de',
+                          child: Text(l10n.settingsLanguageGerman),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -113,11 +118,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: const Icon(Icons.contrast_rounded, color: AppColors.primary),
                   title: l10n.settingsHighContrastTitle,
                   subtitle: l10n.settingsHighContrastSubtitle,
-                  trailing: Switch.adaptive(
-                    value: _prefs.highContrast,
-                    onChanged: _prefs.setHighContrast,
-                    activeThumbColor: AppColors.primary,
-                    activeTrackColor: AppColors.primary.withValues(alpha: 0.5),
+                  trailing: Semantics(
+                    label: l10n.settingsHighContrastTitle,
+                    toggled: _prefs.highContrast,
+                    child: Switch.adaptive(
+                      key: const Key('settings_high_contrast_switch'),
+                      value: _prefs.highContrast,
+                      onChanged: _prefs.setHighContrast,
+                      activeThumbColor: AppColors.primary,
+                      activeTrackColor: AppColors.primary.withValues(alpha: 0.5),
+                    ),
                   ),
                 ),
                 ListTile(
@@ -141,18 +151,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Slider(
-                    value: _prefs.textScale,
-                    min: 0.9,
-                    max: 1.4,
-                    divisions: 10,
-                    label: '${_prefs.textScale.toStringAsFixed(2)}x',
-                    onChanged: _prefs.setTextScale,
+                  child: Semantics(
+                    label: l10n.settingsTextScaleTitle,
+                    value: '${_prefs.textScale.toStringAsFixed(2)}x',
+                    child: Slider(
+                      key: const Key('settings_text_scale_slider'),
+                      value: _prefs.textScale,
+                      min: 0.9,
+                      max: 1.4,
+                      divisions: 10,
+                      label: '${_prefs.textScale.toStringAsFixed(2)}x',
+                      onChanged: _prefs.setTextScale,
+                    ),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: TextButton.icon(
+                    key: const Key('settings_reset_text_scale_button'),
                     onPressed: () => _prefs.setTextScale(1.0),
                     icon: const Icon(Icons.format_size_rounded, size: 16),
                     label: Text(

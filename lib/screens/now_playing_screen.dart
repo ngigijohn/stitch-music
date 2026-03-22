@@ -127,6 +127,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
+            tooltip: 'Collapse player',
             icon: const Icon(Icons.expand_more_rounded, size: 30),
             color: AppColors.onSurface,
           ),
@@ -143,6 +144,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
           const Spacer(),
           IconButton(
             onPressed: () => _showTrackActionsSheet(context),
+            tooltip: 'Track actions',
             icon: const Icon(Icons.more_vert_rounded, size: 24),
             color: AppColors.onSurface,
           ),
@@ -228,17 +230,22 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
         ),
         GestureDetector(
           onTap: () => _playback.toggleFavorite(trackId),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: _playback.isFavorite(trackId) ? AppColors.primary.withValues(alpha: 0.15) : Colors.transparent,
-            ),
-            child: Icon(
-              _playback.isFavorite(trackId) ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-              color: _playback.isFavorite(trackId) ? AppColors.primary : AppColors.onSurfaceVariant,
+          child: Semantics(
+            label: _playback.isFavorite(trackId) ? 'Remove from favorites' : 'Add to favorites',
+            button: true,
+            toggled: _playback.isFavorite(trackId),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _playback.isFavorite(trackId) ? AppColors.primary.withValues(alpha: 0.15) : Colors.transparent,
+              ),
+              child: Icon(
+                _playback.isFavorite(trackId) ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                color: _playback.isFavorite(trackId) ? AppColors.primary : AppColors.onSurfaceVariant,
+              ),
             ),
           ),
         ),
@@ -293,17 +300,21 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
         ),
         GestureDetector(
           onTap: _playback.togglePlayPause,
-          child: Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(28),
-              gradient: const LinearGradient(colors: [AppColors.primary, AppColors.primaryContainer]),
-            ),
-            child: Icon(
-              _playback.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-              color: AppColors.onPrimary,
-              size: 42,
+          child: Semantics(
+            label: _playback.isPlaying ? 'Pause playback' : 'Resume playback',
+            button: true,
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(28),
+                gradient: const LinearGradient(colors: [AppColors.primary, AppColors.primaryContainer]),
+              ),
+              child: Icon(
+                _playback.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                color: AppColors.onPrimary,
+                size: 42,
+              ),
             ),
           ),
         ),
@@ -832,30 +843,34 @@ class _Pill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 72,
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          color: onTap != null
-              ? AppColors.surfaceContainerHigh
-              : AppColors.surfaceContainerHigh.withValues(alpha: 0.5),
-          border: isActive
-              ? Border.all(color: AppColors.primary.withValues(alpha: 0.6))
-              : null,
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: isActive ? AppColors.primary : AppColors.onSurfaceVariant, size: 22),
-            const SizedBox(height: 4),
-            Text(label, style: GoogleFonts.manrope(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: isActive ? AppColors.primary : AppColors.onSurfaceVariant,
-            )),
-          ],
+    return Semantics(
+      label: label,
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 72,
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: onTap != null
+                ? AppColors.surfaceContainerHigh
+                : AppColors.surfaceContainerHigh.withValues(alpha: 0.5),
+            border: isActive
+                ? Border.all(color: AppColors.primary.withValues(alpha: 0.6))
+                : null,
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: isActive ? AppColors.primary : AppColors.onSurfaceVariant, size: 22),
+              const SizedBox(height: 4),
+              Text(label, style: GoogleFonts.manrope(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: isActive ? AppColors.primary : AppColors.onSurfaceVariant,
+              )),
+            ],
+          ),
         ),
       ),
     );
@@ -873,26 +888,30 @@ class _BottomBarBtn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: isActive
-              ? BoxDecoration(borderRadius: BorderRadius.circular(999), color: AppColors.primaryContainer.withValues(alpha: 0.25))
-              : null,
-          child: Column(
-            children: [
-              Icon(icon, color: isActive ? AppColors.primary : AppColors.onSurfaceVariant, size: 22),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: GoogleFonts.manrope(
-                  fontSize: 10,
-                  fontWeight: isActive ? FontWeight.w800 : FontWeight.w700,
-                  color: isActive ? AppColors.primary : AppColors.onSurfaceVariant,
+      child: Semantics(
+        label: label,
+        button: true,
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: isActive
+                ? BoxDecoration(borderRadius: BorderRadius.circular(999), color: AppColors.primaryContainer.withValues(alpha: 0.25))
+                : null,
+            child: Column(
+              children: [
+                Icon(icon, color: isActive ? AppColors.primary : AppColors.onSurfaceVariant, size: 22),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: GoogleFonts.manrope(
+                    fontSize: 10,
+                    fontWeight: isActive ? FontWeight.w800 : FontWeight.w700,
+                    color: isActive ? AppColors.primary : AppColors.onSurfaceVariant,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

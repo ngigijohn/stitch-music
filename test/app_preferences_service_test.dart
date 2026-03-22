@@ -7,7 +7,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final service = AppPreferencesService.instance;
 
-    await service.init();
+    await service.debugResetForTests();
     await service.setLocaleCode('es');
     await service.setHighContrast(true);
     await service.setTextScale(1.25);

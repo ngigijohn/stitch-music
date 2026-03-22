@@ -58,4 +58,13 @@ class AppPreferencesService extends ChangeNotifier {
     _textScale = prefs.getDouble(_kTextScale) ?? 1.0;
     notifyListeners();
   }
+
+  @visibleForTesting
+  Future<void> debugResetForTests() async {
+    _initialized = false;
+    _localeCode = null;
+    _highContrast = false;
+    _textScale = 1.0;
+    await init();
+  }
 }

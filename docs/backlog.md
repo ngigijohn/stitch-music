@@ -13,6 +13,7 @@ Last updated: 2026-03-22
 
 - Phase 3 settings expansion is underway: persisted language selector and high-contrast toggle are now implemented, with broader a11y rollout still open
 - Phase 3 accessibility controls now include persisted text scaling applied app-wide; remaining work is semantics coverage and RTL/text-scale validation on key screens
+- Phase 3 semantics pass started: key controls in Settings, Home quick actions, and Now Playing now expose improved screen-reader labels/hints
 - Online discovery currently runs in demo or fail-closed mode; official auth, entitlement refresh, and playback URI resolution remain pending
 - Recently merged feature streams (offline cache, audio effects, export/share, insights, i18n) need an end-to-end UX completion pass and regression coverage
 
@@ -20,6 +21,7 @@ Last updated: 2026-03-22
 
 - Complete remaining Phase 3 accessibility affordances (screen-reader semantics, focus order checks, and RTL layout validation)
 - Add widget tests for settings preferences persistence (locale, high contrast, text scale)
+- Add widget tests that assert semantics discoverability for critical controls in Home and Now Playing
 - Finish localization coverage across Home, Now Playing, Insights, playlists, dialogs, and banners
 - Replace the discovery-only online search path with compliant, entitlement-gated playback integration
 - Expand widget and integration coverage for merged navigation, playback, cache, and streaming flows
@@ -54,6 +56,7 @@ Last updated: 2026-03-22
 - Phase 2 profile hub upgrades with persisted local identity fields
 - Phase 3 start: persisted language selector, high-contrast toggle, and expanded Settings information architecture
 - Phase 3 continued: persisted text-scale control and global text scaling application
+- Phase 3 continued: accessibility semantics labels for key controls plus settings preference persistence widget coverage
 - QA baseline tests (model mapping, theme contract, app shell smoke)
 - Branch workflow and CI scaffolding for parallel agents
 
