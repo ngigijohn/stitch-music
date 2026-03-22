@@ -387,7 +387,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     return '$m:${s.toString().padLeft(2, '0')}';
   }
 
-  void _showEqPanel(BuildContext context) {
   void _showTrackShareSheet(BuildContext context) {
     final track = _playback.currentTrack;
     if (track == null) return;

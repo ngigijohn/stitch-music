@@ -240,8 +240,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                     : Icons.open_in_new_rounded,
                                 size: 18,
                               ),
-                              label: Text(
-                                  _cache.isOfflineMode ? 'Offline' : 'Open'),
                               label: Text(_cache.isOfflineMode ? 'Offline' : l10n.openLabel),
                             ),
                           ],
