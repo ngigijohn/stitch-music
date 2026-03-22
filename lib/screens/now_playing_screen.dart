@@ -6,6 +6,7 @@ import '../services/audio_effects_service.dart';
 import '../services/export_service.dart';
 import '../services/playback_controller.dart';
 import '../theme/app_theme.dart';
+import 'insights_screen.dart';
 import 'queue_screen.dart';
 import 'settings_screen.dart';
 
@@ -141,7 +142,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
           ),
           const Spacer(),
           IconButton(
-            onPressed: () {},
+            onPressed: () => _showTrackActionsSheet(context),
             icon: const Icon(Icons.more_vert_rounded, size: 24),
             color: AppColors.onSurface,
           ),
@@ -327,8 +328,16 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        const _Pill(icon: Icons.volume_up_rounded, label: 'Volume'),
-        const _Pill(icon: Icons.speed_rounded, label: 'Speed'),
+        _Pill(
+          icon: Icons.volume_up_rounded,
+          label: 'Volume',
+          onTap: () => _showVolumeSheet(context),
+        ),
+        _Pill(
+          icon: Icons.speed_rounded,
+          label: 'Speed',
+          onTap: () => _showSpeedSheet(context),
+        ),
         _Pill(
           icon: Icons.equalizer_rounded,
           label: 'EQ',
@@ -356,7 +365,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
         padding: const EdgeInsets.all(6),
         child: Row(
           children: [
-            _BottomBarBtn(icon: Icons.devices_rounded, label: 'Devices', onTap: () {}),
+            _BottomBarBtn(icon: Icons.devices_rounded, label: 'Devices', onTap: () => _showDevicesSheet(context)),
             _BottomBarBtn(
               icon: Icons.queue_music_rounded,
               label: 'Queue',
@@ -554,6 +563,239 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
       builder: (_) => const _EqPanel(),
     );
   }
+
+  void _showDevicesSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _ActionSheetFrame(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _ActionSheetTile(
+              icon: Icons.phone_android_rounded,
+              title: 'This device',
+              subtitle: 'Current playback stays on the active phone output.',
+              onTap: () => Navigator.pop(ctx),
+            ),
+            _ActionSheetTile(
+              icon: Icons.bluetooth_audio_rounded,
+              title: 'Bluetooth or cast route',
+              subtitle: 'Use your system media output picker to move playback. Stitch Music follows the system route.',
+              onTap: () => Navigator.pop(ctx),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showVolumeSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (sheetContext, setSheetState) => _ActionSheetFrame(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Playback volume', style: GoogleFonts.epilogue(fontSize: 18, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 6),
+                Text('Adjust just_audio output volume for the current session.', style: GoogleFonts.manrope(fontSize: 12, color: AppColors.onSurfaceVariant)),
+                Slider(
+                  value: _playback.volume,
+                  onChanged: (value) async {
+                    await _playback.setVolume(value);
+                    setSheetState(() {});
+                  },
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Text('${(_playback.volume * 100).round()}%', style: GoogleFonts.manrope(fontWeight: FontWeight.w800, color: AppColors.primary)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showSpeedSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (sheetContext, setSheetState) => _ActionSheetFrame(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Playback speed', style: GoogleFonts.epilogue(fontSize: 18, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 6),
+                Text('Slow down for detail or speed up for review.', style: GoogleFonts.manrope(fontSize: 12, color: AppColors.onSurfaceVariant)),
+                Slider(
+                  min: 0.5,
+                  max: 2.0,
+                  divisions: 6,
+                  value: _playback.speed,
+                  onChanged: (value) async {
+                    await _playback.setSpeed(value);
+                    setSheetState(() {});
+                  },
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Text('${_playback.speed.toStringAsFixed(2)}x', style: GoogleFonts.manrope(fontWeight: FontWeight.w800, color: AppColors.primary)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showTrackActionsSheet(BuildContext context) {
+    final track = _playback.currentTrack;
+    if (track == null) return;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _ActionSheetFrame(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _ActionSheetTile(
+              icon: _playback.isFavorite(track.id) ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+              title: _playback.isFavorite(track.id) ? 'Remove favorite' : 'Add favorite',
+              subtitle: 'Pin this track in your Favorites section.',
+              onTap: () async {
+                await _playback.toggleFavorite(track.id);
+                if (!ctx.mounted) return;
+                Navigator.pop(ctx);
+              },
+            ),
+            _ActionSheetTile(
+              icon: Icons.playlist_add_rounded,
+              title: 'Add to playlist',
+              subtitle: 'Save the current track to one of your playlists.',
+              onTap: () {
+                Navigator.pop(ctx);
+                _showAddToPlaylistSheet(context, track);
+              },
+            ),
+            _ActionSheetTile(
+              icon: Icons.share_rounded,
+              title: 'Share track',
+              subtitle: 'Copy track details or the active queue.',
+              onTap: () {
+                Navigator.pop(ctx);
+                _showTrackShareSheet(context);
+              },
+            ),
+            _ActionSheetTile(
+              icon: Icons.bar_chart_rounded,
+              title: 'Open insights',
+              subtitle: 'Review current analytics and listening stats.',
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.of(context).push(MaterialPageRoute(builder: (_) => const InsightsScreen()));
+              },
+            ),
+            _ActionSheetTile(
+              icon: Icons.settings_rounded,
+              title: 'Open settings',
+              subtitle: 'Jump to EQ and app control settings.',
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAddToPlaylistSheet(BuildContext context, dynamic track) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => AnimatedBuilder(
+        animation: _playback,
+        builder: (ctx, __) {
+          final playlists = _playback.playlists;
+          return _ActionSheetFrame(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.playlist_add_rounded, color: AppColors.primary),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text('Add to playlist', style: GoogleFonts.epilogue(fontSize: 18, fontWeight: FontWeight.w800)),
+                      ),
+                    ],
+                  ),
+                ),
+                if (playlists.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Text(
+                      'No playlists yet. Create one from the Playlists tab.',
+                      style: GoogleFonts.manrope(color: AppColors.onSurfaceVariant),
+                    ),
+                  )
+                else
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 280),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: playlists.length,
+                      itemBuilder: (_, index) {
+                        final playlist = playlists[index];
+                        final alreadyIn = playlist.trackIds.contains(track.id);
+                        return ListTile(
+                          leading: Icon(
+                            alreadyIn ? Icons.check_circle_rounded : Icons.playlist_add_rounded,
+                            color: alreadyIn ? AppColors.primary : AppColors.onSurfaceVariant,
+                          ),
+                          title: Text(playlist.name),
+                          subtitle: Text('${playlist.trackIds.length} tracks'),
+                          onTap: alreadyIn
+                              ? null
+                              : () async {
+                                  await _playback.addTrackToPlaylist(playlist.id, track.id);
+                                  if (!ctx.mounted) return;
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Added to "${playlist.name}"')),
+                                  );
+                                },
+                        );
+                      },
+                    ),
+                  ),
+                const SizedBox(height: 12),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
 }
 
 class _AnimatedMeshBg extends StatelessWidget {
@@ -654,6 +896,73 @@ class _BottomBarBtn extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ActionSheetFrame extends StatelessWidget {
+  final Widget child;
+
+  const _ActionSheetFrame({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.45)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 12),
+          Container(
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.outlineVariant,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 8),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _ActionSheetTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _ActionSheetTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Container(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: AppColors.primary.withValues(alpha: 0.14),
+        ),
+        child: Icon(icon, color: AppColors.primary),
+      ),
+      title: Text(title, style: GoogleFonts.manrope(fontWeight: FontWeight.w800)),
+      subtitle: Text(subtitle, style: GoogleFonts.manrope(fontSize: 12, color: AppColors.onSurfaceVariant)),
+      trailing: const Icon(Icons.chevron_right_rounded),
+      onTap: onTap,
     );
   }
 }

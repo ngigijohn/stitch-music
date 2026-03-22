@@ -5,8 +5,14 @@ import '../models/music_models.dart';
 import '../services/playback_controller.dart';
 import '../services/streaming/online_search_activity_service.dart';
 import '../theme/app_theme.dart';
+import 'album_spotlight_screen.dart';
+import 'cache_settings_screen.dart';
+import 'daily_mixes_screen.dart';
+import 'insights_screen.dart';
 import 'now_playing_screen.dart';
 import 'online_search_screen.dart';
+import 'profile_screen.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -43,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
               CustomScrollView(
                 physics: const BouncingScrollPhysics(),
                 slivers: [
-                  _TopAppBar(),
+                  _TopAppBar(onQuickActionsTap: () => _showQuickActions(context)),
                   SliverPadding(
                     padding: const EdgeInsets.only(bottom: 160),
                     sliver: SliverList(
@@ -62,9 +68,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 34),
                         _RecentOnlineSearchesSection(activity: _searchActivity),
                         const SizedBox(height: 40),
-                        _DailyMixesSection(),
+                        const _DailyMixesSection(),
                         const SizedBox(height: 40),
-                        _NewReleasesSection(),
+                        const _NewReleasesSection(),
                       ]),
                     ),
                   ),
@@ -74,6 +80,73 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       },
+    );
+  }
+
+  void _showQuickActions(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => Container(
+        margin: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.45)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 14),
+            _QuickActionTile(
+              icon: Icons.settings_rounded,
+              title: 'Settings',
+              subtitle: 'Audio, localization, and app controls',
+              onTap: () {
+                Navigator.pop(sheetContext);
+                Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
+              },
+            ),
+            _QuickActionTile(
+              icon: Icons.download_for_offline_rounded,
+              title: 'Cache & Offline',
+              subtitle: 'Pinned tracks, offline mode, and cache size',
+              onTap: () {
+                Navigator.pop(sheetContext);
+                Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CacheSettingsScreen()));
+              },
+            ),
+            _QuickActionTile(
+              icon: Icons.bar_chart_rounded,
+              title: 'Insights',
+              subtitle: 'Playback stats and recent listening trends',
+              onTap: () {
+                Navigator.pop(sheetContext);
+                Navigator.of(context).push(MaterialPageRoute(builder: (_) => const InsightsScreen()));
+              },
+            ),
+            _QuickActionTile(
+              icon: Icons.person_rounded,
+              title: 'Profile',
+              subtitle: 'Open the profile hub and account actions',
+              onTap: () {
+                Navigator.pop(sheetContext);
+                Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ProfileScreen()));
+              },
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -256,6 +329,10 @@ class _AmbientBackground extends StatelessWidget {
 
 // ─── Top App Bar ─────────────────────────────────────────────────────────────
 class _TopAppBar extends StatelessWidget {
+  final VoidCallback onQuickActionsTap;
+
+  const _TopAppBar({required this.onQuickActionsTap});
+
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
@@ -280,18 +357,21 @@ class _TopAppBar extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.surfaceContainerHigh,
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                  width: 1.5,
+            GestureDetector(
+              onTap: onQuickActionsTap,
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.surfaceContainerHigh,
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                    width: 1.5,
+                  ),
                 ),
+                child: const Icon(Icons.person_rounded, size: 20, color: AppColors.primary),
               ),
-              child: const Icon(Icons.person_rounded, size: 20, color: AppColors.primary),
             ),
           ],
         ),
@@ -933,6 +1013,8 @@ class _EmptyInfoCard extends StatelessWidget {
 
 // ─── Daily Mixes ─────────────────────────────────────────────────────────────
 class _DailyMixesSection extends StatelessWidget {
+  const _DailyMixesSection();
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -950,7 +1032,11 @@ class _DailyMixesSection extends StatelessWidget {
               ),
               const Spacer(),
               GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const DailyMixesScreen()),
+                  );
+                },
                 child: Text(
                   'See All',
                   style: GoogleFonts.manrope(
@@ -985,7 +1071,13 @@ class _MixCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => DailyMixesScreen(selectedMixId: mix.id)),
+        );
+      },
+      child: SizedBox(
       width: 180,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1041,12 +1133,15 @@ class _MixCard extends StatelessWidget {
           ),
         ],
       ),
+      ),
     );
   }
 }
 
 // ─── New Releases ─────────────────────────────────────────────────────────────
 class _NewReleasesSection extends StatelessWidget {
+  const _NewReleasesSection();
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -1123,7 +1218,11 @@ class _NewReleasesSection extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       FilledButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const AlbumSpotlightScreen()),
+                          );
+                        },
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.primaryDim,
                           foregroundColor: AppColors.onPrimary,
@@ -1155,7 +1254,16 @@ class _NewReleaseRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-      child: Container(
+      child: GestureDetector(
+        onTap: () async {
+          final playback = PlaybackController.instance;
+          await playback.playFromLibrary(track, sourceList: playback.library);
+          if (!context.mounted) return;
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const NowPlayingScreen()),
+          );
+        },
+        child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           color: AppColors.surfaceContainerLow,
@@ -1185,7 +1293,41 @@ class _NewReleaseRow extends StatelessWidget {
             Icon(Icons.play_circle_rounded, color: AppColors.onSurfaceVariant, size: 28),
           ],
         ),
+        ),
       ),
+    );
+  }
+}
+
+class _QuickActionTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _QuickActionTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Container(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: AppColors.primary.withValues(alpha: 0.14),
+        ),
+        child: Icon(icon, color: AppColors.primary),
+      ),
+      title: Text(title, style: GoogleFonts.manrope(fontWeight: FontWeight.w800)),
+      subtitle: Text(subtitle, style: GoogleFonts.manrope(fontSize: 12, color: AppColors.onSurfaceVariant)),
+      trailing: const Icon(Icons.chevron_right_rounded),
+      onTap: onTap,
     );
   }
 }

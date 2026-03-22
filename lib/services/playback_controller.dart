@@ -73,6 +73,8 @@ class PlaybackController extends ChangeNotifier {
       (_currentIndex >= 0 && _currentIndex < _queue.length) ? _queue[_currentIndex] : null;
   Duration get position => _position;
   Duration get duration => _duration;
+  double get volume => _player.volume;
+  double get speed => _player.speed;
   QueueRepeatMode get repeatMode => _repeatMode;
   bool get shuffleEnabled => _shuffleEnabled;
   List<String> get favorites => List.unmodifiable(_favorites.toList());
@@ -248,6 +250,16 @@ class PlaybackController extends ChangeNotifier {
   Future<void> seekTo(Duration position) async {
     await _player.seek(position);
     _schedulePersist();
+  }
+
+  Future<void> setVolume(double value) async {
+    await _player.setVolume(value.clamp(0.0, 1.0));
+    notifyListeners();
+  }
+
+  Future<void> setSpeed(double value) async {
+    await _player.setSpeed(value.clamp(0.5, 2.0));
+    notifyListeners();
   }
 
   void toggleShuffle() {

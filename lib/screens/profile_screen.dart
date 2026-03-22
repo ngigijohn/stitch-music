@@ -1,22 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:stitch_music/l10n/app_localizations.dart';
+import '../services/analytics_service.dart';
+import '../services/playback_controller.dart';
 import '../theme/app_theme.dart';
+import 'cache_settings_screen.dart';
+import 'listening_history_screen.dart';
+import 'profile_edit_screen.dart';
+import 'settings_screen.dart';
 
-/// Minimal Profile placeholder.
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final PlaybackController playback = PlaybackController.instance;
+    final AnalyticsService analytics = AnalyticsService.instance;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
+    return AnimatedBuilder(
+      animation: Listenable.merge([playback, analytics]),
+      builder: (context, _) {
+        final libraryCount = playback.library.length;
+        final artistCount = playback.library.map((track) => track.artist).toSet().length;
+        final listened = analytics.totalListenedFormatted.isEmpty ? '0m' : analytics.totalListenedFormatted;
+
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 32),
@@ -69,20 +83,36 @@ class ProfileScreen extends StatelessWidget {
               // Stats row
               Row(
                 children: [
-                  _StatCard(label: l10n.profileSongs, value: '1,284'),
+                  _StatCard(label: l10n.profileSongs, value: '$libraryCount'),
                   const SizedBox(width: 12),
-                  _StatCard(label: l10n.profileArtists, value: '342'),
+                  _StatCard(label: l10n.profileArtists, value: '$artistCount'),
                   const SizedBox(width: 12),
-                  _StatCard(label: l10n.profileHours, value: '896'),
+                  _StatCard(label: l10n.profileHours, value: listened),
                 ],
               ),
               const SizedBox(height: 32),
               // Menu items
               ...[
-                (l10n.profileEdit, Icons.edit_rounded),
-                (l10n.profileHistory, Icons.history_rounded),
-                (l10n.profileDownloads, Icons.download_rounded),
-                (l10n.profileSettings, Icons.settings_rounded),
+                (
+                  l10n.profileEdit,
+                  Icons.edit_rounded,
+                  () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ProfileEditScreen())),
+                ),
+                (
+                  l10n.profileHistory,
+                  Icons.history_rounded,
+                  () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ListeningHistoryScreen())),
+                ),
+                (
+                  l10n.profileDownloads,
+                  Icons.download_rounded,
+                  () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CacheSettingsScreen())),
+                ),
+                (
+                  l10n.profileSettings,
+                  Icons.settings_rounded,
+                  () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
+                ),
               ].map((item) {
                 return Container(
                   margin: const EdgeInsets.only(bottom: 8),
@@ -97,15 +127,17 @@ class ProfileScreen extends StatelessWidget {
                       style: GoogleFonts.manrope(fontSize: 14, fontWeight: FontWeight.w600),
                     ),
                     trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.onSurfaceVariant),
-                    onTap: () {},
+                    onTap: item.$3,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   ),
                 );
               }),
             ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
