@@ -102,6 +102,14 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
   }
 
   Future<void> _queueCandidate(StreamCandidate candidate) async {
+    await _resolveAndQueueCandidate(candidate, playNow: false);
+  }
+
+  Future<void> _playCandidateNow(StreamCandidate candidate) async {
+    await _resolveAndQueueCandidate(candidate, playNow: true);
+  }
+
+  Future<void> _resolveAndQueueCandidate(StreamCandidate candidate, {required bool playNow}) async {
     final adapter = _registry.byProvider(_provider);
     final entitlement = _entitlement;
     if (adapter == null || entitlement == null) {
@@ -140,12 +148,16 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
     await _playback.addStreamCandidateToQueue(
       candidate: candidate,
       playbackUri: uri,
-      playNow: false,
+      playNow: playNow,
     );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Added "${candidate.title}" to queue.'),
+        content: Text(
+          playNow
+              ? 'Playing "${candidate.title}" now.'
+              : 'Added "${candidate.title}" to queue.',
+        ),
       ),
     );
   }
@@ -274,6 +286,7 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
                 result: _result,
                 resolvingCandidateId: _resolvingCandidateId,
                 onQueueCandidate: _queueCandidate,
+                onPlayNow: _playCandidateNow,
               ),
             ),
           ],
@@ -400,11 +413,13 @@ class _ResultPane extends StatelessWidget {
   final StreamDiscoveryResult? result;
   final String? resolvingCandidateId;
   final Future<void> Function(StreamCandidate candidate) onQueueCandidate;
+  final Future<void> Function(StreamCandidate candidate) onPlayNow;
 
   const _ResultPane({
     required this.result,
     required this.resolvingCandidateId,
     required this.onQueueCandidate,
+    required this.onPlayNow,
   });
 
   @override
@@ -513,6 +528,14 @@ class _ResultPane extends StatelessWidget {
                         'Add',
                         style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
                       ),
+              ),
+              const SizedBox(width: 6),
+              FilledButton(
+                onPressed: resolvingCandidateId == c.id ? null : () => onPlayNow(c),
+                child: Text(
+                  'Play',
+                  style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
+                ),
               ),
             ],
           ),

@@ -162,6 +162,7 @@ Started in this phase:
 - Wired `OnlineSearchScreen` result actions to entitlement-gated URI resolution.
 - Added playback-controller queue insertion path for resolved stream candidates.
 - Added demo backend URI resolution for entitled demo mode while keeping production default fail-closed.
+- Added explicit `Play` action from online results, still gated by entitlement + URI resolution before playback starts.
 
 Primary files:
 
