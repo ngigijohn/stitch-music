@@ -5,6 +5,7 @@
     "/^cd /c/Users/engin/Downloads/stitch_music && bash scripts/start_parallel_branches\\.sh$/": {
       "approve": true,
       "matchCommandLine": true
-    }
+    },
+    "git push": true
   }
 }
