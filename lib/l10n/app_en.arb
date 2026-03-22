@@ -1,0 +1,61 @@
+{
+  "@@locale": "en",
+  "appTitle": "Stitch Music",
+  "navHome": "Home",
+  "navDiscover": "Discover",
+  "navLibrary": "Library",
+  "navProfile": "Profile",
+  "profileTitle": "Profile",
+  "profileDisplayName": "Music Lover",
+  "profileSongs": "Songs",
+  "profileArtists": "Artists",
+  "profileHours": "Hours",
+  "profileEdit": "Edit Profile",
+  "profileHistory": "Listening History",
+  "profileDownloads": "Downloads",
+  "profileSettings": "Settings",
+  "libraryTitle": "Your Library",
+  "libraryRescanTooltip": "Rescan device",
+  "libraryOnlineSearchTooltip": "Online search (YouTube)",
+  "libraryOnlineSearchTitle": "Online Search",
+  "libraryOnlineSearchDescription": "Search YouTube discovery results in demo or safe mode.",
+  "openLabel": "Open",
+  "librarySearchHint": "Search songs, artists, albums...",
+  "libraryFilterAll": "All",
+  "libraryFilterSongs": "Songs",
+  "libraryFilterAlbums": "Albums",
+  "libraryFilterArtists": "Artists",
+  "songsCount": "{count} songs",
+  "@songsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "songsDetectedCount": "Songs detected: {count}",
+  "@songsDetectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mediaAccessGranted": "Media access granted",
+  "permissionPermanentlyDenied": "Permission permanently denied",
+  "mediaPermissionRequired": "Media permission required",
+  "scanningStatus": "Scanning...",
+  "idleStatus": "Idle",
+  "lastScan": "Last scan: {value}",
+  "@lastScan": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "neverLabel": "Never",
+  "retryLabel": "Retry",
+  "openAppSettings": "Open app settings",
+  "grantMusicPermission": "Grant music permission"
+}

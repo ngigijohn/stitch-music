@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:stitch_music/l10n/app_localizations.dart';
 
 import '../models/music_models.dart';
 import '../services/cache_service.dart';
@@ -24,8 +25,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   String _query = '';
   int _selectedChip = 0;
-
-  static const List<String> _filters = ['All', 'Songs', 'Albums', 'Artists'];
 
   @override
   void initState() {
@@ -51,6 +50,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final filters = [
+      l10n.libraryFilterAll,
+      l10n.libraryFilterSongs,
+      l10n.libraryFilterAlbums,
+      l10n.libraryFilterArtists,
+    ];
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: AnimatedBuilder(
@@ -87,7 +94,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         children: [
                           Expanded(
                             child: Text(
-                              'Your Library',
+                              l10n.libraryTitle,
                               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: -0.8,
@@ -132,7 +139,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                             onPressed: _playback.scanDeviceLibrary,
                             icon: const Icon(Icons.refresh_rounded),
                             color: AppColors.primary,
-                            tooltip: 'Rescan device',
+                            tooltip: l10n.libraryRescanTooltip,
                           ),
                           IconButton(
                             onPressed: () {
@@ -166,7 +173,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                       .withValues(alpha: 0.35)
                                   : AppColors.primary,
                             ),
-                            tooltip: 'Online search (YouTube)',
+                            tooltip: l10n.libraryOnlineSearchTooltip,
                           ),
                         ],
                       ),
@@ -199,7 +206,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Online Search',
+                                    l10n.libraryOnlineSearchTitle,
                                     style: GoogleFonts.manrope(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w800,
@@ -208,7 +215,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Search YouTube discovery results in demo or safe mode.',
+                                    l10n.libraryOnlineSearchDescription,
                                     style: GoogleFonts.manrope(
                                       fontSize: 11,
                                       color: AppColors.onSurfaceVariant,
@@ -235,6 +242,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                               ),
                               label: Text(
                                   _cache.isOfflineMode ? 'Offline' : 'Open'),
+                              label: Text(_cache.isOfflineMode ? 'Offline' : l10n.openLabel),
                             ),
                           ],
                         ),
@@ -248,7 +256,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         onChanged: (v) => setState(() => _query = v),
                         style: GoogleFonts.manrope(color: AppColors.onSurface, fontSize: 14),
                         decoration: InputDecoration(
-                          hintText: 'Search songs, artists, albums...',
+                          hintText: l10n.librarySearchHint,
                           prefixIcon: const Icon(Icons.search_rounded, color: AppColors.onSurfaceVariant, size: 20),
                           suffixIcon: _query.isNotEmpty
                               ? GestureDetector(
@@ -269,12 +277,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         physics: const BouncingScrollPhysics(),
-                        itemCount: _filters.length,
+                        itemCount: filters.length,
                         separatorBuilder: (_, __) => const SizedBox(width: 8),
                         itemBuilder: (ctx, i) {
                           final selected = _selectedChip == i;
                           return FilterChip(
-                            label: Text(_filters[i]),
+                            label: Text(filters[i]),
                             selected: selected,
                             onSelected: (_) => setState(() => _selectedChip = i),
                             labelStyle: GoogleFonts.manrope(
@@ -300,7 +308,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                       child: Text(
-                        '${songs.length} songs',
+                        l10n.songsCount(songs.length),
                         style: GoogleFonts.manrope(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
@@ -369,6 +377,7 @@ class _DiagnosticsPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final status   = playback.permissionStatus;
     final granted  = status == PermissionStatus.granted ||
                      status == PermissionStatus.limited;
@@ -404,10 +413,10 @@ class _DiagnosticsPanel extends StatelessWidget {
                 Expanded(
                   child: Text(
                     granted
-                        ? 'Media access granted'
+                      ? l10n.mediaAccessGranted
                         : permaDenied
-                            ? 'Permission permanently denied'
-                            : 'Media permission required',
+                        ? l10n.permissionPermanentlyDenied
+                        : l10n.mediaPermissionRequired,
                     style: GoogleFonts.manrope(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -416,7 +425,7 @@ class _DiagnosticsPanel extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  playback.isScanning ? 'Scanning…' : 'Idle',
+                  playback.isScanning ? l10n.scanningStatus : l10n.idleStatus,
                   style: GoogleFonts.manrope(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
@@ -428,12 +437,12 @@ class _DiagnosticsPanel extends StatelessWidget {
             const SizedBox(height: 8),
             // --- metrics ---
             Text(
-              'Songs detected: $songCount',
+              l10n.songsDetectedCount(songCount),
               style: GoogleFonts.manrope(fontSize: 11, color: AppColors.onSurfaceVariant),
             ),
             const SizedBox(height: 2),
             Text(
-              'Last scan: ${last == null ? 'Never' : _fmtTime(last)}',
+              l10n.lastScan(last == null ? l10n.neverLabel : _fmtTime(last)),
               style: GoogleFonts.manrope(fontSize: 11, color: AppColors.onSurfaceVariant),
             ),
             // --- scan error with retry ---
@@ -455,7 +464,7 @@ class _DiagnosticsPanel extends StatelessWidget {
                     GestureDetector(
                       onTap: playback.scanDeviceLibrary,
                       child: Text(
-                        'Retry',
+                        l10n.retryLabel,
                         style: GoogleFonts.manrope(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
@@ -473,13 +482,13 @@ class _DiagnosticsPanel extends StatelessWidget {
                 if (permaDenied)
                   _ActionButton(
                     icon: Icons.settings_rounded,
-                    label: 'Open app settings',
+                    label: l10n.openAppSettings,
                     onTap: openAppSettings,
                   )
                 else
                   _ActionButton(
                     icon: Icons.lock_open_rounded,
-                    label: 'Grant music permission',
+                    label: l10n.grantMusicPermission,
                     onTap: playback.scanDeviceLibrary,
                   ),
               ],

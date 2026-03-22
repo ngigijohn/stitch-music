@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:stitch_music/l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 /// Minimal Profile placeholder.
@@ -8,6 +9,8 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
@@ -18,7 +21,7 @@ class ProfileScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 32),
               Text(
-                'Profile',
+                l10n.profileTitle,
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                   fontWeight: FontWeight.w900,
                   letterSpacing: -0.8,
@@ -47,7 +50,7 @@ class ProfileScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Music Lover',
+                        l10n.profileDisplayName,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
                       ),
                       const SizedBox(height: 4),
@@ -66,20 +69,20 @@ class ProfileScreen extends StatelessWidget {
               // Stats row
               Row(
                 children: [
-                  _StatCard(label: 'Songs', value: '1,284'),
+                  _StatCard(label: l10n.profileSongs, value: '1,284'),
                   const SizedBox(width: 12),
-                  _StatCard(label: 'Artists', value: '342'),
+                  _StatCard(label: l10n.profileArtists, value: '342'),
                   const SizedBox(width: 12),
-                  _StatCard(label: 'Hours', value: '896'),
+                  _StatCard(label: l10n.profileHours, value: '896'),
                 ],
               ),
               const SizedBox(height: 32),
               // Menu items
               ...[
-                ('Edit Profile', Icons.edit_rounded),
-                ('Listening History', Icons.history_rounded),
-                ('Downloads', Icons.download_rounded),
-                ('Settings', Icons.settings_rounded),
+                (l10n.profileEdit, Icons.edit_rounded),
+                (l10n.profileHistory, Icons.history_rounded),
+                (l10n.profileDownloads, Icons.download_rounded),
+                (l10n.profileSettings, Icons.settings_rounded),
               ].map((item) {
                 return Container(
                   margin: const EdgeInsets.only(bottom: 8),
