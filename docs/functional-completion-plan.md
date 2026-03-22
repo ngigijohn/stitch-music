@@ -145,6 +145,8 @@ Acceptance criteria:
 
 ### Phase 4: Complete Policy-Compliant Online Playback
 
+Status: In progress
+
 Objective: move from discovery-only remote results to an entitled playback path without violating provider policy.
 
 Work:
@@ -154,6 +156,12 @@ Work:
 3. Add remote-source playback entry points in `PlaybackController`.
 4. Wire `OnlineSearchScreen` result actions to queue insertion and playback only when URI resolution succeeds.
 5. Preserve clear fail-closed UX when credentials, auth, or entitlements are unavailable.
+
+Started in this phase:
+
+- Wired `OnlineSearchScreen` result actions to entitlement-gated URI resolution.
+- Added playback-controller queue insertion path for resolved stream candidates.
+- Added demo backend URI resolution for entitled demo mode while keeping production default fail-closed.
 
 Primary files:
 

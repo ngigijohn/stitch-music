@@ -56,6 +56,12 @@ class MockYouTubeBackendGateway implements StreamBackendGateway {
     required StreamCandidate candidate,
     required UserEntitlement entitlement,
   }) async {
-    return null;
+    if (!entitlement.canAttemptPlayback) {
+      return null;
+    }
+    if (candidate.requiresEntitlement && !entitlement.canAttemptPlayback) {
+      return null;
+    }
+    return candidate.playbackUri ?? Uri.parse('https://demo.invalid/$provider/${candidate.id}.mp3');
   }
 }

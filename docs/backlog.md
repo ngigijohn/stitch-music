@@ -11,12 +11,15 @@ Last updated: 2026-03-22
 
 ## In Progress
 
+- Phase 4 has started: online discovery results now run through entitlement-gated URI resolution and queue insertion flow
 - Online discovery currently runs in demo or fail-closed mode; official auth, entitlement refresh, and playback URI resolution remain pending
 - Recently merged feature streams (offline cache, audio effects, export/share, insights, i18n) need an end-to-end UX completion pass and regression coverage
 
 ## Next Up
 
 - Finish localization coverage across Home, Now Playing, Insights, playlists, dialogs, and banners
+- Complete Phase 4 with official provider auth/entitlement refresh and production URI resolution backend
+- Add optional play-now flow for resolved online candidates once provider-backed playable URIs are available
 - Replace the discovery-only online search path with compliant, entitlement-gated playback integration
 - Expand widget and integration coverage for merged navigation, playback, cache, and streaming flows
 - Add CI release gates for `flutter analyze`, `flutter test`, and debug build validation

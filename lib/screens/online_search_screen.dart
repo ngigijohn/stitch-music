@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../services/playback_controller.dart';
 import '../services/streaming/stream_adapter_registry.dart';
 import '../services/streaming/online_search_activity_service.dart';
 import '../services/streaming/stream_discovery_models.dart';
@@ -16,6 +17,7 @@ class OnlineSearchScreen extends StatefulWidget {
 class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
   final TextEditingController _queryController = TextEditingController();
   final OnlineSearchActivityService _activity = OnlineSearchActivityService.instance;
+  final PlaybackController _playback = PlaybackController.instance;
 
   static const String _provider = 'youtube';
 
@@ -24,6 +26,7 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
   bool _loadingEntitlement = true;
   bool _searching = false;
   bool _demoMode = true;
+  String? _resolvingCandidateId;
 
   StreamAdapterRegistry get _registry =>
       _demoMode ? StreamAdapterRegistry.demoRegistry() : StreamAdapterRegistry.defaultRegistry();
@@ -95,6 +98,55 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
       provider: _provider,
       resultCount: res.candidates.length,
       demoMode: _demoMode,
+    );
+  }
+
+  Future<void> _queueCandidate(StreamCandidate candidate) async {
+    final adapter = _registry.byProvider(_provider);
+    final entitlement = _entitlement;
+    if (adapter == null || entitlement == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Provider setup is unavailable.')),
+      );
+      return;
+    }
+
+    if (candidate.requiresEntitlement && !entitlement.canAttemptPlayback) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Entitlement is required for this track.')),
+      );
+      return;
+    }
+
+    setState(() => _resolvingCandidateId = candidate.id);
+    final uri = await adapter.resolvePlaybackUri(
+      candidate: candidate,
+      entitlement: entitlement,
+    );
+    if (!mounted) return;
+    setState(() => _resolvingCandidateId = null);
+
+    if (uri == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Playback URI unavailable. Backend remains fail-closed.'),
+        ),
+      );
+      return;
+    }
+
+    await _playback.addStreamCandidateToQueue(
+      candidate: candidate,
+      playbackUri: uri,
+      playNow: false,
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Added "${candidate.title}" to queue.'),
+      ),
     );
   }
 
@@ -218,7 +270,11 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
                 child: LinearProgressIndicator(minHeight: 2),
               ),
             Expanded(
-              child: _ResultPane(result: _result),
+              child: _ResultPane(
+                result: _result,
+                resolvingCandidateId: _resolvingCandidateId,
+                onQueueCandidate: _queueCandidate,
+              ),
             ),
           ],
         ),
@@ -342,8 +398,14 @@ class _BannerCard extends StatelessWidget {
 
 class _ResultPane extends StatelessWidget {
   final StreamDiscoveryResult? result;
+  final String? resolvingCandidateId;
+  final Future<void> Function(StreamCandidate candidate) onQueueCandidate;
 
-  const _ResultPane({required this.result});
+  const _ResultPane({
+    required this.result,
+    required this.resolvingCandidateId,
+    required this.onQueueCandidate,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -437,6 +499,20 @@ class _ResultPane extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                   color: c.requiresEntitlement ? const Color(0xFFFFC86B) : const Color(0xFF8FE388),
                 ),
+              ),
+              const SizedBox(width: 10),
+              FilledButton.tonal(
+                onPressed: resolvingCandidateId == c.id ? null : () => onQueueCandidate(c),
+                child: resolvingCandidateId == c.id
+                    ? const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(
+                        'Add',
+                        style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
+                      ),
               ),
             ],
           ),

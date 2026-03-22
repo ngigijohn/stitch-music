@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/music_models.dart';
+import 'streaming/stream_discovery_models.dart';
 import 'cache_service.dart';
 import 'audio_effects_service.dart';
 import 'analytics_service.dart';
@@ -190,6 +191,33 @@ class PlaybackController extends ChangeNotifier {
     await playAtIndex(idx < 0 ? 0 : idx);
   }
 
+  Future<void> addStreamCandidateToQueue({
+    required StreamCandidate candidate,
+    required Uri playbackUri,
+    bool playNow = false,
+  }) async {
+    final duration = candidate.duration;
+    final int durationMs = duration?.inMilliseconds ?? 0;
+    final track = Track(
+      id: 'stream_${candidate.provider}_${candidate.id}',
+      title: candidate.title,
+      artist: candidate.artist,
+      album: '${candidate.provider.toUpperCase()} Stream',
+      duration: _formatDuration(duration),
+      durationMs: durationMs,
+      uri: playbackUri.toString(),
+      filePath: null,
+    );
+
+    _queue.add(track);
+    _schedulePersist();
+    notifyListeners();
+
+    if (playNow) {
+      await playAtIndex(_queue.length - 1);
+    }
+  }
+
   Future<void> playAtIndex(int index) async {
     if (index < 0 || index >= _queue.length) return;
 
@@ -215,7 +243,7 @@ class PlaybackController extends ChangeNotifier {
         album: track.album,
         durationMs: track.durationMs,
       );
-      final uri = source.startsWith('content://') ? Uri.parse(source) : Uri.file(source);
+      final uri = _toPlayableUri(source);
       await _player.setAudioSource(AudioSource.uri(uri));
       await _player.play();
       _schedulePersist();
@@ -583,7 +611,7 @@ class PlaybackController extends ChangeNotifier {
       final track = _queue[_currentIndex];
       final source = track.uri ?? track.filePath;
       if (source == null || source.isEmpty) return;
-      final uri = source.startsWith('content://') ? Uri.parse(source) : Uri.file(source);
+      final uri = _toPlayableUri(source);
       await _player.setAudioSource(AudioSource.uri(uri));
       if (posMs > 0) {
         await _player.seek(Duration(milliseconds: posMs));
@@ -651,5 +679,21 @@ class PlaybackController extends ChangeNotifier {
     _duration = Duration.zero;
     _scanError = null;
     notifyListeners();
+  }
+
+  Uri _toPlayableUri(String source) {
+    if (source.startsWith('content://') ||
+        source.startsWith('http://') ||
+        source.startsWith('https://')) {
+      return Uri.parse(source);
+    }
+    return Uri.file(source);
+  }
+
+  String _formatDuration(Duration? duration) {
+    if (duration == null) return '0:00';
+    final int minutes = duration.inMinutes;
+    final int seconds = duration.inSeconds % 60;
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 }
