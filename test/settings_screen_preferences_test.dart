@@ -26,6 +26,25 @@ void main() {
 
     await pumpSettings(tester);
 
+    expect(
+      find.byWidgetPredicate(
+        (widget) => widget is Semantics && widget.properties.label == 'App language',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byWidgetPredicate(
+        (widget) => widget is Semantics && widget.properties.label == 'High contrast mode',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byWidgetPredicate(
+        (widget) => widget is Semantics && widget.properties.label == 'Text size',
+      ),
+      findsOneWidget,
+    );
+
     await tester.tap(find.byKey(const Key('settings_high_contrast_switch')));
     await tester.pumpAndSettle();
     expect(prefs.highContrast, isTrue);
