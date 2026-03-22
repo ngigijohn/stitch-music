@@ -20,14 +20,18 @@ void main() {
   testWidgets('Profile screen routes settings and history actions', (tester) async {
     await pumpProfile(tester);
 
-    await tester.tap(find.text('Settings'));
+    final settingsTile = find.widgetWithText(ListTile, 'Settings');
+    await tester.ensureVisible(settingsTile);
+    await tester.tap(settingsTile);
     await tester.pumpAndSettle();
     expect(find.text('Settings'), findsWidgets);
 
     await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded).first);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Listening History'));
+    final historyTile = find.widgetWithText(ListTile, 'Listening History');
+    await tester.ensureVisible(historyTile);
+    await tester.tap(historyTile);
     await tester.pumpAndSettle();
     expect(find.text('Listening History'), findsOneWidget);
   });

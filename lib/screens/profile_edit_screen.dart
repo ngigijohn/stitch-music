@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../services/profile_preferences_service.dart';
 import '../theme/app_theme.dart';
 
 class ProfileEditScreen extends StatefulWidget {
@@ -11,8 +12,17 @@ class ProfileEditScreen extends StatefulWidget {
 }
 
 class _ProfileEditScreenState extends State<ProfileEditScreen> {
-  final TextEditingController _nameController = TextEditingController(text: 'Music Lover');
-  final TextEditingController _emailController = TextEditingController(text: 'listener@stitchmusic.app');
+  final ProfilePreferencesService _profile = ProfilePreferencesService.instance;
+  late final TextEditingController _nameController;
+  late final TextEditingController _emailController;
+
+  @override
+  void initState() {
+    super.initState();
+    _profile.init();
+    _nameController = TextEditingController(text: _profile.displayName);
+    _emailController = TextEditingController(text: _profile.email);
+  }
 
   @override
   void dispose() {
@@ -58,10 +68,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Profile changes saved for this session.')),
+              onPressed: () async {
+                await _profile.saveProfile(
+                  displayName: _nameController.text,
+                  email: _emailController.text,
                 );
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Profile changes saved.')),
+                );
+                Navigator.pop(context);
               },
               icon: const Icon(Icons.save_rounded),
               label: const Text('Save changes'),

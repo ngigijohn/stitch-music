@@ -49,6 +49,8 @@ Close the gap between visual UI polish and real behavior by wiring no-op control
 
 ### Phase 1: Wire Existing UI To Real Destinations
 
+Status: Completed and merged into `sprint/current`
+
 Objective: remove the highest-visibility no-op controls without changing architecture unnecessarily.
 
 Work:
@@ -80,6 +82,8 @@ Acceptance criteria:
 
 ### Phase 2: Turn Profile Into A Real Hub
 
+Status: In progress
+
 Objective: make Profile the place where user-oriented features converge instead of leaving settings and history fragmented.
 
 Work:
@@ -91,6 +95,7 @@ Work:
    - Downloads / cache management
    - Settings
 3. Add room for locale, theme, and accessibility shortcuts.
+4. Persist local profile identity fields so the Profile hub reflects user changes.
 
 Primary files:
 
