@@ -126,6 +126,13 @@ Started in this phase:
 - Added `AppPreferencesService` for persisted locale and high-contrast preferences.
 - Wired app-level locale + high-contrast handling in `main.dart`.
 - Expanded `SettingsScreen` with Language, Accessibility, General, and Audio sections.
+- Added persisted text-scale controls in Settings and applied text scaling app-wide through `MaterialApp.builder`.
+
+Next in this phase:
+
+- Add semantics-first audits for key controls on Home, Now Playing, and Settings.
+- Run RTL and large-text layout passes on primary screens and fix overflow/focus issues.
+- Add widget coverage for locale/high-contrast/text-scale persistence flows.
 
 Primary files:
 

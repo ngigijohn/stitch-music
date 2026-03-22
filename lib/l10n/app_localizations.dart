@@ -384,6 +384,24 @@ abstract class AppLocalizations {
   /// **'Increase contrast for text and key surfaces'**
   String get settingsHighContrastSubtitle;
 
+  /// No description provided for @settingsTextScaleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Text size'**
+  String get settingsTextScaleTitle;
+
+  /// No description provided for @settingsTextScaleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scale text across the app'**
+  String get settingsTextScaleSubtitle;
+
+  /// No description provided for @settingsTextScaleReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset text size'**
+  String get settingsTextScaleReset;
+
   /// No description provided for @settingsAccessibilityRoadmapTitle.
   ///
   /// In en, this message translates to:

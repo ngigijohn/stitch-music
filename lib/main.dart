@@ -40,6 +40,15 @@ class StitchMusicApp extends StatelessWidget {
           supportedLocales: AppLocalizations.supportedLocales,
           locale: prefs.localeCode == null ? null : Locale(prefs.localeCode!),
           theme: buildAppTheme(highContrast: prefs.highContrast),
+          builder: (context, child) {
+            final mediaQuery = MediaQuery.of(context);
+            return MediaQuery(
+              data: mediaQuery.copyWith(
+                textScaler: TextScaler.linear(prefs.textScale),
+              ),
+              child: child ?? const SizedBox.shrink(),
+            );
+          },
           home: const MainShell(),
         );
       },

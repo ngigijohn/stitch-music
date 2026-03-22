@@ -122,6 +122,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                  leading: const Icon(Icons.text_fields_rounded, color: AppColors.primary),
+                  title: Text(
+                    l10n.settingsTextScaleTitle,
+                    style: GoogleFonts.manrope(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      color: AppColors.onSurface,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '${l10n.settingsTextScaleSubtitle} (${_prefs.textScale.toStringAsFixed(2)}x)',
+                    style: GoogleFonts.manrope(
+                      fontSize: 12,
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Slider(
+                    value: _prefs.textScale,
+                    min: 0.9,
+                    max: 1.4,
+                    divisions: 10,
+                    label: '${_prefs.textScale.toStringAsFixed(2)}x',
+                    onChanged: _prefs.setTextScale,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: TextButton.icon(
+                    onPressed: () => _prefs.setTextScale(1.0),
+                    icon: const Icon(Icons.format_size_rounded, size: 16),
+                    label: Text(
+                      l10n.settingsTextScaleReset,
+                      style: GoogleFonts.manrope(fontSize: 13, fontWeight: FontWeight.w700),
+                    ),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                   leading: const Icon(Icons.accessibility_new_rounded, color: AppColors.primary),
                   title: Text(
                     l10n.settingsAccessibilityRoadmapTitle,

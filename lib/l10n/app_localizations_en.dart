@@ -158,6 +158,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'Increase contrast for text and key surfaces';
 
   @override
+  String get settingsTextScaleTitle => 'Text size';
+
+  @override
+  String get settingsTextScaleSubtitle => 'Scale text across the app';
+
+  @override
+  String get settingsTextScaleReset => 'Reset text size';
+
+  @override
   String get settingsAccessibilityRoadmapTitle => 'More accessibility controls';
 
   @override

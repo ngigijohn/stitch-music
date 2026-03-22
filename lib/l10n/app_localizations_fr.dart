@@ -159,6 +159,16 @@ class AppLocalizationsFr extends AppLocalizations {
       'Augmente le contraste du texte et des surfaces principales';
 
   @override
+  String get settingsTextScaleTitle => 'Taille du texte';
+
+  @override
+  String get settingsTextScaleSubtitle =>
+      'Ajuste le texte dans toute l\'application';
+
+  @override
+  String get settingsTextScaleReset => 'Reinitialiser la taille du texte';
+
+  @override
   String get settingsAccessibilityRoadmapTitle =>
       'Plus de controles d\'accessibilite';
 
