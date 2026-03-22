@@ -11,17 +11,12 @@ Last updated: 2026-03-22
 
 ## In Progress
 
-- Phase 4 has started: online discovery results now run through entitlement-gated URI resolution and queue insertion flow
-- Phase 4 now includes a gated `Play` path from online results that only executes when entitlement + URI resolution succeed
-- Phase 4 now includes auth/session lifecycle abstraction and production backend contract wiring that remains fail-closed by default
 - Online discovery currently runs in demo or fail-closed mode; official auth, entitlement refresh, and playback URI resolution remain pending
 - Recently merged feature streams (offline cache, audio effects, export/share, insights, i18n) need an end-to-end UX completion pass and regression coverage
 
 ## Next Up
 
 - Finish localization coverage across Home, Now Playing, Insights, playlists, dialogs, and banners
-- Complete Phase 4 with official provider auth/entitlement refresh and production URI resolution backend
-- Add optional play-now flow for resolved online candidates once provider-backed playable URIs are available
 - Replace the discovery-only online search path with compliant, entitlement-gated playback integration
 - Expand widget and integration coverage for merged navigation, playback, cache, and streaming flows
 - Add CI release gates for `flutter analyze`, `flutter test`, and debug build validation
@@ -57,6 +52,7 @@ Last updated: 2026-03-22
 - Phase 3 continued: persisted text-scale control and global text scaling application
 - Phase 3 continued: accessibility semantics labels for key controls plus settings preference persistence widget coverage
 - Phase 3 completed: settings is now the app control center with persisted locale, high contrast, text scaling, cache linkage, and accessibility test coverage
+- Phase 4 completed: entitlement-gated queue/play actions, auth lifecycle abstraction, production backend contract transport, and fail-closed/entitled path tests
 - QA baseline tests (model mapping, theme contract, app shell smoke)
 - Branch workflow and CI scaffolding for parallel agents
 

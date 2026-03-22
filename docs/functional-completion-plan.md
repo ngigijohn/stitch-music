@@ -145,7 +145,7 @@ Acceptance criteria:
 
 ### Phase 4: Complete Policy-Compliant Online Playback
 
-Status: In progress
+Status: Completed and merged into `sprint/current`
 
 Objective: move from discovery-only remote results to an entitled playback path without violating provider policy.
 
@@ -166,6 +166,8 @@ Started in this phase:
 - Added stream auth/session lifecycle abstraction with refresh-state handling for provider adapters.
 - Added production backend contract gateway that stays fail-closed until official provider endpoints are configured and integrated.
 - Added tests for auth-state transitions and production fail-closed UI messaging.
+- Added provider-contract HTTP transport integration for entitlement, catalog search, and playback URI resolution.
+- Added configured-vs-unconfigured production contract tests with fail-closed and entitled success paths.
 
 Primary files:
 
