@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:stitch_music/l10n/app_localizations.dart';
 import 'package:stitch_music/screens/settings_screen.dart';
 import 'package:stitch_music/services/app_preferences_service.dart';
-import 'package:stitch_music/theme/app_theme.dart';
+import 'test_helpers.dart';
 
 void main() {
   testWidgets('settings remains usable under RTL and large text scale', (tester) async {
@@ -14,10 +13,8 @@ void main() {
     await prefs.setTextScale(1.4);
 
     await tester.pumpWidget(
-      MaterialApp(
-        theme: buildAppTheme(),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
+      buildTestableApp(
+        home: const SettingsScreen(),
         builder: (context, child) {
           final mq = MediaQuery.of(context);
           return Directionality(
@@ -28,7 +25,6 @@ void main() {
             ),
           );
         },
-        home: const SettingsScreen(),
       ),
     );
     await tester.pumpAndSettle();

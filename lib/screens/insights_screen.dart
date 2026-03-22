@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:stitch_music/l10n/app_localizations.dart';
 
 import '../services/analytics_service.dart';
 import '../services/playback_controller.dart';
@@ -95,35 +96,38 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
   Widget _summaryRow() => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 4),
-        child: Row(
-          children: [
-            _statChip(
-              icon: Icons.play_circle_outline_rounded,
-              value: '${_analytics.totalPlays}',
-              label: 'Total Plays',
-            ),
-            _statChip(
-              icon: Icons.access_time_rounded,
-              value: _analytics.totalListenedFormatted.isEmpty
-                  ? '0m'
-                  : _analytics.totalListenedFormatted,
-              label: 'Listened',
-              iconColor: AppColors.secondary,
-            ),
-            _statChip(
-              icon: Icons.library_music_rounded,
-              value: '${_playback.library.length}',
-              label: 'In Library',
-              iconColor: const Color(0xFF26A69A),
-            ),
-            _statChip(
-              icon: Icons.favorite_rounded,
-              value: '${_playback.favorites.length}',
-              label: 'Favorites',
-              iconColor: const Color(0xFFEF5350),
-            ),
-          ],
-        ),
+        child: Builder(builder: (context) {
+          final l10n = AppLocalizations.of(context)!;
+          return Row(
+            children: [
+              _statChip(
+                icon: Icons.play_circle_outline_rounded,
+                value: '${_analytics.totalPlays}',
+                label: l10n.insightsTotalPlays,
+              ),
+              _statChip(
+                icon: Icons.access_time_rounded,
+                value: _analytics.totalListenedFormatted.isEmpty
+                    ? '0m'
+                    : _analytics.totalListenedFormatted,
+                label: l10n.insightsListened,
+                iconColor: AppColors.secondary,
+              ),
+              _statChip(
+                icon: Icons.library_music_rounded,
+                value: '${_playback.library.length}',
+                label: l10n.insightsInLibrary,
+                iconColor: const Color(0xFF26A69A),
+              ),
+              _statChip(
+                icon: Icons.favorite_rounded,
+                value: '${_playback.favorites.length}',
+                label: l10n.insightsFavorites,
+                iconColor: const Color(0xFFEF5350),
+              ),
+            ],
+          );
+        }),
       );
 
   // ── Skip rate badge ────────────────────────────────────────────────────────
@@ -153,7 +157,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Skip Rate',
+                    AppLocalizations.of(context)!.insightsSkipRate,
                     style: GoogleFonts.manrope(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -162,12 +166,12 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   ),
                   Text(
                     _analytics.totalPlays == 0
-                        ? 'No data yet'
+                        ? AppLocalizations.of(context)!.insightsSkipRateNoData
                         : rate < 0.3
-                            ? 'Low — you finish what you start 🎯'
+                            ? AppLocalizations.of(context)!.insightsSkipRateLow
                             : rate < 0.6
-                                ? 'Moderate — fairly selective'
-                                : 'High — skipping a lot',
+                                ? AppLocalizations.of(context)!.insightsSkipRateModerate
+                                : AppLocalizations.of(context)!.insightsSkipRateHigh,
                     style: GoogleFonts.manrope(
                       fontSize: 11,
                       color: AppColors.onSurfaceVariant,
@@ -195,7 +199,15 @@ class _InsightsScreenState extends State<InsightsScreen> {
   Widget _weeklyChart() {
     final activity = _analytics.weeklyActivity;
     final maxVal = math.max(activity.max, 1);
-    final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final days = [
+      AppLocalizations.of(context)!.insightsDayMon,
+      AppLocalizations.of(context)!.insightsDayTue,
+      AppLocalizations.of(context)!.insightsDayWed,
+      AppLocalizations.of(context)!.insightsDayThu,
+      AppLocalizations.of(context)!.insightsDayFri,
+      AppLocalizations.of(context)!.insightsDaySat,
+      AppLocalizations.of(context)!.insightsDaySun,
+    ];
     // Align playsByDay (0=oldest) to Mon–Sun by using today's weekday
     final todayWd = DateTime.now().weekday; // 1=Mon, 7=Sun
     return Padding(
@@ -211,7 +223,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Last 7 Days',
+              AppLocalizations.of(context)!.insightsLast7Days,
               style: GoogleFonts.manrope(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -305,7 +317,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     if (tracks.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: _emptyCard('Play some tracks to see your Top Tracks'),
+        child: _emptyCard(AppLocalizations.of(context)!.insightsNoTopTracks),
       );
     }
     final maxPlays = tracks.first.plays;
@@ -322,7 +334,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
               sublabel: t.artist,
               value: t.plays,
               maxValue: maxPlays,
-              unit: t.plays == 1 ? 'play' : 'plays',
+              unit: t.plays == 1 ? AppLocalizations.of(context)!.insightsPlaySingular : AppLocalizations.of(context)!.insightsPlayPlural,
               accent: AppColors.primary,
             ),
           );
@@ -338,7 +350,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     if (artists.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: _emptyCard('Coming soon — play more tracks'),
+        child: _emptyCard(AppLocalizations.of(context)!.insightsNoTopArtists),
       );
     }
     final maxPlays = artists.first.plays;
@@ -352,11 +364,10 @@ class _InsightsScreenState extends State<InsightsScreen> {
             child: _RankedBar(
               rank: i + 1,
               label: a.artist,
-              sublabel:
-                  '${(a.totalSecondsPlayed ~/ 60)} min played',
+              sublabel: AppLocalizations.of(context)!.insightsMinPlayed(a.totalSecondsPlayed ~/ 60),
               value: a.plays,
               maxValue: maxPlays,
-              unit: a.plays == 1 ? 'play' : 'plays',
+              unit: a.plays == 1 ? AppLocalizations.of(context)!.insightsPlaySingular : AppLocalizations.of(context)!.insightsPlayPlural,
               accent: AppColors.secondary,
             ),
           );
@@ -405,7 +416,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
           ),
           icon: const Icon(Icons.delete_outline_rounded, size: 18),
           label: Text(
-            'Clear All Stats',
+            AppLocalizations.of(context)!.insightsClearStats,
             style: GoogleFonts.manrope(fontWeight: FontWeight.w600),
           ),
         ),
@@ -417,18 +428,18 @@ class _InsightsScreenState extends State<InsightsScreen> {
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.surfaceContainerHighest,
         title: Text(
-          'Clear all stats?',
+          AppLocalizations.of(context)!.insightsClearTitle,
           style: GoogleFonts.epilogue(
               fontWeight: FontWeight.w700, color: AppColors.onSurface),
         ),
         content: Text(
-          'This removes all play history and analytics data. Your library, playlists, and favorites are not affected.',
+          AppLocalizations.of(context)!.insightsClearContent,
           style: GoogleFonts.manrope(color: AppColors.onSurfaceVariant),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel',
+            child: Text(AppLocalizations.of(context)!.insightsCancelButton,
                 style: GoogleFonts.manrope(color: AppColors.onSurfaceVariant)),
           ),
           TextButton(
@@ -437,7 +448,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
               Navigator.pop(context);
             },
             child: Text(
-              'Clear',
+              AppLocalizations.of(context)!.insightsClearButton,
               style: GoogleFonts.manrope(
                   color: const Color(0xFFEF5350),
                   fontWeight: FontWeight.w700),
@@ -463,7 +474,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
             backgroundColor: AppColors.background,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
-                'Insights',
+                AppLocalizations.of(context)!.insightsTitle,
                 style: GoogleFonts.epilogue(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
@@ -479,13 +490,13 @@ class _InsightsScreenState extends State<InsightsScreen> {
               children: [
                 const SizedBox(height: 8),
                 _summaryRow(),
-                _sectionHeader('LISTENING HABITS'),
+                _sectionHeader(AppLocalizations.of(context)!.insightsListeningHabits),
                 _skipRateBadge(),
                 const SizedBox(height: 16),
                 _weeklyChart(),
-                _sectionHeader('TOP TRACKS'),
+                _sectionHeader(AppLocalizations.of(context)!.insightsTopTracks),
                 _topTracksSection(),
-                _sectionHeader('TOP ARTISTS'),
+                _sectionHeader(AppLocalizations.of(context)!.insightsTopArtists),
                 _topArtistsSection(),
                 _clearButton(),
                 // Extra padding for mini-player + nav bar

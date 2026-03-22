@@ -1,13 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stitch_music/screens/online_search_screen.dart';
-import 'package:stitch_music/theme/app_theme.dart';
+import '../test_helpers.dart';
+import 'package:flutter/material.dart';
 
 void main() {
   testWidgets('online search shows fail-closed production messaging', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        theme: buildAppTheme(),
+      buildTestableApp(
         home: const OnlineSearchScreen(),
       ),
     );

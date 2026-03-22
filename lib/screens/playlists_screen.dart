@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:stitch_music/l10n/app_localizations.dart';
 
 import '../models/music_models.dart';
 import '../services/playback_controller.dart';
@@ -27,7 +28,7 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
     if (_playback.queue.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Queue is empty. Play something first.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.playlistsQueueEmpty)),
       );
       return;
     }
@@ -40,20 +41,20 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('Create Playlist'),
+          title: Text(AppLocalizations.of(ctx)!.playlistsCreateTitle),
           content: TextField(
             controller: ctrl,
             autofocus: true,
-            decoration: const InputDecoration(hintText: 'Playlist name'),
+            decoration: InputDecoration(hintText: AppLocalizations.of(ctx)!.playlistsNameHint),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+              child: Text(AppLocalizations.of(ctx)!.playlistsCancelButton),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(ctx, ctrl.text),
-              child: const Text('Save'),
+              child: Text(AppLocalizations.of(ctx)!.playlistsSaveButton),
             ),
           ],
         );
@@ -64,7 +65,7 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
     await _playback.createPlaylistFromQueue(name.trim());
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Saved "$name"')),
+      SnackBar(content: Text(AppLocalizations.of(context)!.playlistsSaved(name))),
     );
   }
 
@@ -73,15 +74,15 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
     final name = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Rename Playlist'),
+        title: Text(AppLocalizations.of(ctx)!.playlistsRenameTitle),
         content: TextField(
           controller: ctrl,
           autofocus: true,
-          decoration: const InputDecoration(hintText: 'Playlist name'),
+          decoration: InputDecoration(hintText: AppLocalizations.of(ctx)!.playlistsNameHint),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, ctrl.text), child: const Text('Save')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppLocalizations.of(ctx)!.playlistsCancelButton)),
+          FilledButton(onPressed: () => Navigator.pop(ctx, ctrl.text), child: Text(AppLocalizations.of(ctx)!.playlistsSaveButton)),
         ],
       ),
     );
@@ -146,7 +147,7 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
                         children: [
                           Expanded(
                             child: Text(
-                              'Playlists',
+                              AppLocalizations.of(context)!.playlistsTitle,
                               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: -0.8,
@@ -156,7 +157,7 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
                           FilledButton.icon(
                             onPressed: _createPlaylistFromQueue,
                             icon: const Icon(Icons.library_add_rounded, size: 18),
-                            label: const Text('Save Queue'),
+                            label: Text(AppLocalizations.of(context)!.playlistsSaveQueue),
                           ),
                         ],
                       ),
@@ -266,7 +267,7 @@ class _PlaylistCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '$trackCount tracks',
+                    AppLocalizations.of(context)!.playlistsTrackCount(trackCount),
                     style: GoogleFonts.manrope(
                       color: AppColors.onSurfaceVariant,
                       fontSize: 12,
@@ -280,18 +281,18 @@ class _PlaylistCard extends StatelessWidget {
               onPressed: onRename,
               icon: const Icon(Icons.drive_file_rename_outline_rounded, size: 20),
               color: AppColors.primary,
-              tooltip: 'Rename',
+              tooltip: AppLocalizations.of(context)!.playlistsRenameTooltip,
             ),
             IconButton(
               onPressed: onDelete,
               icon: const Icon(Icons.delete_outline_rounded),
               color: AppColors.onSurfaceVariant,
-              tooltip: 'Delete playlist',
+              tooltip: AppLocalizations.of(context)!.playlistsDeleteTooltip,
             ),
             FilledButton.tonalIcon(
               onPressed: onPlay,
               icon: const Icon(Icons.play_arrow_rounded, size: 18),
-              label: const Text('Play'),
+              label: Text(AppLocalizations.of(context)!.playlistsPlayButton),
             ),
           ],
         ),
@@ -324,12 +325,12 @@ class _EmptyPlaylists extends StatelessWidget {
               const Icon(Icons.playlist_add_rounded, size: 42, color: AppColors.primary),
               const SizedBox(height: 12),
               Text(
-                'No playlists yet',
+                AppLocalizations.of(context)!.playlistsEmptyTitle,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 8),
               Text(
-                'Play songs from your library, then save your current queue as a playlist.',
+                AppLocalizations.of(context)!.playlistsEmptySubtitle,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.manrope(
                   fontSize: 13,
@@ -340,7 +341,7 @@ class _EmptyPlaylists extends StatelessWidget {
               FilledButton.icon(
                 onPressed: onCreate,
                 icon: const Icon(Icons.library_add_rounded),
-                label: const Text('Create from Queue'),
+                label: Text(AppLocalizations.of(context)!.playlistsCreateFromQueue),
               ),
             ],
           ),

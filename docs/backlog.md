@@ -11,12 +11,13 @@ Last updated: 2026-03-22
 
 ## In Progress
 
+- Phase 5 localization sweep landed across Home, Now Playing, Insights, Playlists, Online Search, and primary widget tests; remaining RTL, large-text, and semantics follow-up is deferred backlog work
 - Online discovery currently runs in demo or fail-closed mode; official auth, entitlement refresh, and playback URI resolution remain pending
 - Recently merged feature streams (offline cache, audio effects, export/share, insights, i18n) need an end-to-end UX completion pass and regression coverage
 
 ## Next Up
 
-- Finish localization coverage across Home, Now Playing, Insights, playlists, dialogs, and banners
+- Close remaining Phase 5 follow-up work: RTL validation, large-text resilience audit, and deeper semantics coverage on primary playback flows
 - Replace the discovery-only online search path with compliant, entitlement-gated playback integration
 - Expand widget and integration coverage for merged navigation, playback, cache, and streaming flows
 - Add CI release gates for `flutter analyze`, `flutter test`, and debug build validation
@@ -53,6 +54,7 @@ Last updated: 2026-03-22
 - Phase 3 continued: accessibility semantics labels for key controls plus settings preference persistence widget coverage
 - Phase 3 completed: settings is now the app control center with persisted locale, high contrast, text scaling, cache linkage, and accessibility test coverage
 - Phase 4 completed: entitlement-gated queue/play actions, auth lifecycle abstraction, production backend contract transport, and fail-closed/entitled path tests
+- Phase 5 tranche 1 completed: localized Home, Now Playing, Insights, Playlists, and Online Search, regenerated l10n outputs, and aligned widget tests with localized app bootstrapping
 - QA baseline tests (model mapping, theme contract, app shell smoke)
 - Branch workflow and CI scaffolding for parallel agents
 

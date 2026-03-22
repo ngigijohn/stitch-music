@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../l10n/app_localizations.dart';
 import '../services/playback_controller.dart';
 import '../services/streaming/stream_adapter_registry.dart';
 import '../services/streaming/online_search_activity_service.dart';
@@ -49,12 +50,12 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
     if (adapter == null) {
       setState(() {
         _loadingEntitlement = false;
-        _entitlement = const UserEntitlement(
+        _entitlement = UserEntitlement(
           authenticated: false,
           hasPremium: false,
           regionAllowed: false,
           providerUserId: '',
-          statusMessage: 'Provider adapter is missing.',
+          statusMessage: AppLocalizations.of(context)!.onlineSearchProviderUnavailable,
         );
       });
       return;
@@ -75,10 +76,10 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
     final adapter = _registry.byProvider(_provider);
     if (adapter == null) {
       setState(() {
-        _result = const StreamDiscoveryResult(
+        _result = StreamDiscoveryResult(
           error: DiscoveryError(
             code: 'adapter_missing',
-            message: 'Provider adapter is missing.',
+            message: AppLocalizations.of(context)!.onlineSearchProviderUnavailable,
             userActionable: false,
           ),
         );
@@ -115,7 +116,7 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
     if (adapter == null || entitlement == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Provider setup is unavailable.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.onlineSearchProviderUnavailable)),
       );
       return;
     }
@@ -123,7 +124,7 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
     if (candidate.requiresEntitlement && !entitlement.canAttemptPlayback) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Entitlement is required for this track.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.onlineSearchEntitlementRequired)),
       );
       return;
     }
@@ -138,8 +139,8 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
 
     if (uri == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Playback URI unavailable. Backend remains fail-closed.'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.onlineSearchUriUnavailable),
         ),
       );
       return;
@@ -155,8 +156,8 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
       SnackBar(
         content: Text(
           playNow
-              ? 'Playing "${candidate.title}" now.'
-              : 'Added "${candidate.title}" to queue.',
+              ? AppLocalizations.of(context)!.onlineSearchPlayingNow(candidate.title)
+              : AppLocalizations.of(context)!.onlineSearchAddedToQueue(candidate.title),
         ),
       ),
     );
@@ -184,7 +185,7 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      'Online Search (YouTube)',
+                      AppLocalizations.of(context)!.onlineSearchTitle,
                       style: GoogleFonts.epilogue(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
@@ -196,7 +197,7 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
                     onPressed: _refreshEntitlement,
                     icon: const Icon(Icons.refresh_rounded),
                     color: AppColors.primary,
-                    tooltip: 'Refresh entitlement',
+                    tooltip: AppLocalizations.of(context)!.onlineSearchRefreshEntitlement,
                   ),
                 ],
               ),
@@ -204,7 +205,7 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                'Discovery only. Playback stays blocked until official API auth and entitlement are available.',
+                AppLocalizations.of(context)!.onlineSearchDiscoveryNote,
                 style: GoogleFonts.manrope(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -238,8 +239,8 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
                   Expanded(
                     child: Text(
                       _demoMode
-                          ? 'Demo mode: mocked provider results for UI testing'
-                          : 'Production-safe mode: fail-closed until official backend is configured',
+                          ? AppLocalizations.of(context)!.onlineSearchDemoModeLabel
+                          : AppLocalizations.of(context)!.onlineSearchProductionModeLabel,
                       style: GoogleFonts.manrope(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -260,9 +261,9 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
                       controller: _queryController,
                       onSubmitted: (_) => _runSearch(),
                       style: GoogleFonts.manrope(color: AppColors.onSurface, fontSize: 14),
-                      decoration: const InputDecoration(
-                        hintText: 'Search artists, songs, channels...',
-                        prefixIcon: Icon(Icons.search_rounded),
+                      decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context)!.onlineSearchHint,
+                        prefixIcon: const Icon(Icons.search_rounded),
                       ),
                     ),
                   ),
@@ -270,7 +271,7 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
                   FilledButton.icon(
                     onPressed: _searching ? null : _runSearch,
                     icon: const Icon(Icons.travel_explore_rounded, size: 18),
-                    label: const Text('Search'),
+                    label: Text(AppLocalizations.of(context)!.onlineSearchButton),
                   ),
                 ],
               ),
@@ -303,13 +304,14 @@ class _EntitlementBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final ent = entitlement;
     if (ent == null) {
       return _BannerCard(
         color: const Color(0xFFFFC86B),
         icon: Icons.info_outline_rounded,
-        title: 'Entitlement unknown',
-        body: 'Could not determine provider entitlement state.',
+        title: l10n.onlineSearchEntitlementUnknown,
+        body: l10n.onlineSearchEntitlementUnknownBody,
       );
     }
 
@@ -317,8 +319,8 @@ class _EntitlementBanner extends StatelessWidget {
       return _BannerCard(
         color: const Color(0xFFFFC86B),
         icon: Icons.lock_outline_rounded,
-        title: 'Sign in required',
-        body: ent.statusMessage ?? 'Please sign in with the official provider flow.',
+        title: l10n.onlineSearchSignInRequired,
+        body: ent.statusMessage ?? l10n.onlineSearchSignInRequiredBody,
       );
     }
 
@@ -326,8 +328,8 @@ class _EntitlementBanner extends StatelessWidget {
       return _BannerCard(
         color: const Color(0xFFFFC86B),
         icon: Icons.workspace_premium_rounded,
-        title: 'Premium required',
-        body: ent.statusMessage ?? 'Current account level does not allow in-app playback.',
+        title: l10n.onlineSearchPremiumRequired,
+        body: ent.statusMessage ?? l10n.onlineSearchPremiumRequiredBody,
       );
     }
 
@@ -335,16 +337,16 @@ class _EntitlementBanner extends StatelessWidget {
       return _BannerCard(
         color: const Color(0xFFFF9AA6),
         icon: Icons.public_off_rounded,
-        title: 'Unavailable in region',
-        body: ent.statusMessage ?? 'Streaming is restricted for your region.',
+        title: l10n.onlineSearchUnavailableInRegion,
+        body: ent.statusMessage ?? l10n.onlineSearchUnavailableInRegionBody,
       );
     }
 
     return _BannerCard(
       color: const Color(0xFF8FE388),
       icon: Icons.check_circle_rounded,
-      title: 'Entitled',
-      body: 'Account appears eligible for provider playback checks.',
+      title: l10n.onlineSearchEntitled,
+      body: l10n.onlineSearchEntitledBody,
     );
   }
 }
@@ -424,10 +426,11 @@ class _ResultPane extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (result == null) {
       return Center(
         child: Text(
-          'Search online catalog to discover tracks.',
+          l10n.onlineSearchNoCatalog,
           style: GoogleFonts.manrope(color: AppColors.onSurfaceVariant),
         ),
       );
@@ -449,7 +452,7 @@ class _ResultPane extends StatelessWidget {
     if (result!.candidates.isEmpty) {
       return Center(
         child: Text(
-          'No results found.',
+          l10n.onlineSearchNoResults,
           style: GoogleFonts.manrope(color: AppColors.onSurfaceVariant),
         ),
       );
@@ -508,7 +511,7 @@ class _ResultPane extends StatelessWidget {
                 ),
               ),
               Text(
-                c.requiresEntitlement ? 'Locked' : 'Open',
+                c.requiresEntitlement ? l10n.onlineSearchLockedBadge : l10n.onlineSearchOpenBadge,
                 style: GoogleFonts.manrope(
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
@@ -525,7 +528,7 @@ class _ResultPane extends StatelessWidget {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : Text(
-                        'Add',
+                        l10n.onlineSearchAddButton,
                         style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
                       ),
               ),
@@ -533,7 +536,7 @@ class _ResultPane extends StatelessWidget {
               FilledButton(
                 onPressed: resolvingCandidateId == c.id ? null : () => onPlayNow(c),
                 child: Text(
-                  'Play',
+                  l10n.onlineSearchPlayButton,
                   style: GoogleFonts.manrope(fontWeight: FontWeight.w700),
                 ),
               ),

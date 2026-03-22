@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stitch_music/l10n/app_localizations.dart';
 import 'package:stitch_music/screens/profile_screen.dart';
-import 'package:stitch_music/theme/app_theme.dart';
+import 'test_helpers.dart';
 
 void main() {
   Future<void> pumpProfile(WidgetTester tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        theme: buildAppTheme(),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
+      buildTestableApp(
         home: const ProfileScreen(),
       ),
     );

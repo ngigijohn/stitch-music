@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:stitch_music/l10n/app_localizations.dart';
 
 import '../models/music_models.dart';
 import '../services/playback_controller.dart';
@@ -109,8 +110,8 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 14),
             _QuickActionTile(
               icon: Icons.settings_rounded,
-              title: 'Settings',
-              subtitle: 'Audio, localization, and app controls',
+              title: AppLocalizations.of(context)!.homeQaSettings,
+              subtitle: AppLocalizations.of(context)!.homeQaSettingsSubtitle,
               onTap: () {
                 Navigator.pop(sheetContext);
                 Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
@@ -118,8 +119,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             _QuickActionTile(
               icon: Icons.download_for_offline_rounded,
-              title: 'Cache & Offline',
-              subtitle: 'Pinned tracks, offline mode, and cache size',
+              title: AppLocalizations.of(context)!.homeQaCacheOffline,
+              subtitle: AppLocalizations.of(context)!.homeQaCacheOfflineSubtitle,
               onTap: () {
                 Navigator.pop(sheetContext);
                 Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CacheSettingsScreen()));
@@ -127,8 +128,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             _QuickActionTile(
               icon: Icons.bar_chart_rounded,
-              title: 'Insights',
-              subtitle: 'Playback stats and recent listening trends',
+              title: AppLocalizations.of(context)!.homeQaInsights,
+              subtitle: AppLocalizations.of(context)!.homeQaInsightsSubtitle,
               onTap: () {
                 Navigator.pop(sheetContext);
                 Navigator.of(context).push(MaterialPageRoute(builder: (_) => const InsightsScreen()));
@@ -136,8 +137,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             _QuickActionTile(
               icon: Icons.person_rounded,
-              title: 'Profile',
-              subtitle: 'Open the profile hub and account actions',
+              title: AppLocalizations.of(context)!.homeQaProfile,
+              subtitle: AppLocalizations.of(context)!.homeQaProfileSubtitle,
               onTap: () {
                 Navigator.pop(sheetContext);
                 Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ProfileScreen()));
@@ -224,9 +225,9 @@ class _OnlineDiscoverySection extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _StatusChip(label: 'Demo Results'),
-                _StatusChip(label: 'Entitlement Banners'),
-                _StatusChip(label: 'Policy-Compliant'),
+                _StatusChip(label: AppLocalizations.of(context)!.homeOnlineDiscoveryChipDemo),
+                _StatusChip(label: AppLocalizations.of(context)!.homeOnlineDiscoveryChipEntitlement),
+                _StatusChip(label: AppLocalizations.of(context)!.homeOnlineDiscoveryChipPolicy),
               ],
             ),
             const SizedBox(height: 18),
@@ -239,12 +240,12 @@ class _OnlineDiscoverySection extends StatelessWidget {
                     );
                   },
                   icon: const Icon(Icons.travel_explore_rounded, size: 18),
-                  label: const Text('Open Online Search'),
+                  label: Text(AppLocalizations.of(context)!.homeOpenOnlineSearch),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'No playback is enabled here yet.',
+                    AppLocalizations.of(context)!.homeNoPlaybackYet,
                     textAlign: TextAlign.right,
                     style: GoogleFonts.manrope(
                       fontSize: 11,
@@ -348,7 +349,7 @@ class _TopAppBar extends StatelessWidget {
             Icon(Icons.search_rounded, color: AppColors.primary, size: 26),
             const Spacer(),
             Text(
-              'The Sonic Gallery',
+              AppLocalizations.of(context)!.homeAppBarTitle,
               style: GoogleFonts.epilogue(
                 fontSize: 22,
                 fontWeight: FontWeight.w900,
@@ -360,7 +361,7 @@ class _TopAppBar extends StatelessWidget {
             GestureDetector(
               onTap: onQuickActionsTap,
               child: Semantics(
-                label: 'Open quick actions',
+                label: AppLocalizations.of(context)!.homeOpenQuickActions,
                 button: true,
                 child: Container(
                   width: 38,
@@ -393,8 +394,9 @@ class _HeroSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentTrack = playback.currentTrack;
-    final title = currentTrack?.title ?? 'Start Your Session';
-    final subtitle = currentTrack?.artist ?? 'Play from your library and your current track will live here.';
+    final l10n = AppLocalizations.of(context)!;
+    final title = currentTrack?.title ?? l10n.homeHeroDefaultTitle;
+    final subtitle = currentTrack?.artist ?? l10n.homeHeroDefaultSubtitle;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -445,7 +447,7 @@ class _HeroSection extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        currentTrack == null ? 'READY TO PLAY' : 'NOW PLAYING',
+                        currentTrack == null ? l10n.homeHeroReadyToPlay : l10n.homeHeroNowPlayingBadge,
                         style: GoogleFonts.manrope(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
@@ -486,7 +488,7 @@ class _HeroSection extends StatelessWidget {
                               playback.isPlaying ? Icons.equalizer_rounded : Icons.play_arrow_rounded,
                               size: 20,
                             ),
-                            label: Text(currentTrack == null ? 'Open Player' : 'Resume'),
+                            label: Text(currentTrack == null ? l10n.homeHeroOpenPlayer : l10n.homeHeroResume),
                           ),
                           const SizedBox(width: 12),
                           _GlassCircleButton(
@@ -540,7 +542,7 @@ class _RecentPlaysSection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Text(
-            'Recent Plays',
+            AppLocalizations.of(context)!.homeRecentPlaysTitle,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w800,
               letterSpacing: -0.5,
@@ -551,9 +553,9 @@ class _RecentPlaysSection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: recents.isEmpty
-              ? const _EmptyInfoCard(
-                  title: 'No recent local plays',
-                  subtitle: 'Play something from your library and it will show up here.',
+              ? _EmptyInfoCard(
+                  title: AppLocalizations.of(context)!.homeRecentPlaysEmpty,
+                  subtitle: AppLocalizations.of(context)!.homeRecentPlaysEmptySubtitle,
                   icon: Icons.history_rounded,
                 )
               : _AsymmetricGrid(recents: recents, playback: playback),
@@ -745,7 +747,7 @@ class _FavoriteTracksSection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Text(
-            'Favorite Tracks',
+            AppLocalizations.of(context)!.homeFavoriteTracksTitle,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w800,
               letterSpacing: -0.5,
@@ -754,11 +756,11 @@ class _FavoriteTracksSection extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         if (favorites.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: _EmptyInfoCard(
-              title: 'No favorites yet',
-              subtitle: 'Tap the heart on Now Playing to keep your top tracks here.',
+              title: AppLocalizations.of(context)!.homeFavoriteTracksEmpty,
+              subtitle: AppLocalizations.of(context)!.homeFavoriteTracksEmptySubtitle,
               icon: Icons.favorite_border_rounded,
             ),
           )
@@ -859,7 +861,7 @@ class _RecentOnlineSearchesSection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Text(
-            'Recent Online Searches',
+            AppLocalizations.of(context)!.homeRecentSearchesTitle,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w800,
               letterSpacing: -0.5,
@@ -868,11 +870,11 @@ class _RecentOnlineSearchesSection extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         if (searches.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: _EmptyInfoCard(
-              title: 'No online searches yet',
-              subtitle: 'Run a search in Online Discovery and it will show up here.',
+              title: AppLocalizations.of(context)!.homeRecentSearchesEmpty,
+              subtitle: AppLocalizations.of(context)!.homeRecentSearchesEmptySubtitle,
               icon: Icons.cloud_queue_rounded,
             ),
           )
@@ -930,7 +932,7 @@ class _RecentSearchRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${entry.resultCount} results • ${entry.demoMode ? 'Demo mode' : 'Safe mode'}',
+                  '${AppLocalizations.of(context)!.homeSearchResultCount(entry.resultCount)} • ${entry.demoMode ? AppLocalizations.of(context)!.homeSearchDemoMode : AppLocalizations.of(context)!.homeSearchSafeMode}',
                   style: GoogleFonts.manrope(
                     fontSize: 11,
                     color: AppColors.onSurfaceVariant,
@@ -1029,7 +1031,7 @@ class _DailyMixesSection extends StatelessWidget {
           child: Row(
             children: [
               Text(
-                'Daily Mixes',
+                AppLocalizations.of(context)!.homeDailyMixesTitle,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w800, letterSpacing: -0.5,
                 ),
@@ -1042,7 +1044,7 @@ class _DailyMixesSection extends StatelessWidget {
                   );
                 },
                 child: Text(
-                  'See All',
+                  AppLocalizations.of(context)!.homeSeeAll,
                   style: GoogleFonts.manrope(
                     fontSize: 13, fontWeight: FontWeight.w700,
                     color: AppColors.primary,
@@ -1154,7 +1156,7 @@ class _NewReleasesSection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Text(
-            'New Releases',
+            AppLocalizations.of(context)!.homeNewReleasesTitle,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w800, letterSpacing: -0.5,
             ),
@@ -1199,7 +1201,7 @@ class _NewReleasesSection extends StatelessWidget {
                           border: Border.all(color: AppColors.tertiary.withValues(alpha: 0.3)),
                         ),
                         child: Text(
-                          'Album of the Week',
+                          AppLocalizations.of(context)!.homeAlbumOfWeek,
                           style: GoogleFonts.manrope(
                             fontSize: 9, fontWeight: FontWeight.w800,
                             color: AppColors.tertiary, letterSpacing: 1.5,
@@ -1233,7 +1235,7 @@ class _NewReleasesSection extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                           textStyle: GoogleFonts.manrope(fontSize: 12, fontWeight: FontWeight.w700),
                         ),
-                        child: const Text('Explore Album'),
+                        child: Text(AppLocalizations.of(context)!.homeExploreAlbum),
                       ),
                     ],
                   ),

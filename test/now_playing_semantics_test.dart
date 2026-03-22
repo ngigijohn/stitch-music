@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stitch_music/models/music_models.dart';
 import 'package:stitch_music/screens/now_playing_screen.dart';
 import 'package:stitch_music/services/playback_controller.dart';
-import 'package:stitch_music/theme/app_theme.dart';
+import 'test_helpers.dart';
 
 void main() {
   testWidgets('now playing exposes semantics for key action controls', (tester) async {
@@ -25,8 +25,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(
-        theme: buildAppTheme(),
+      buildTestableApp(
         home: const NowPlayingScreen(),
       ),
     );
