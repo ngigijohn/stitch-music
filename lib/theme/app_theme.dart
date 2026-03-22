@@ -95,13 +95,24 @@ TextTheme _buildTextTheme() {
 }
 
 // ─── ThemeData ───────────────────────────────────────────────────────────────
-ThemeData buildAppTheme() {
+ThemeData buildAppTheme({bool highContrast = false}) {
   final text = _buildTextTheme();
+  final colorScheme = highContrast
+      ? kColorScheme.copyWith(
+          primary: Colors.white,
+          onPrimary: Colors.black,
+          surface: const Color(0xFF060507),
+          onSurface: Colors.white,
+          onSurfaceVariant: const Color(0xFFE6E1EE),
+          outline: Colors.white,
+          outlineVariant: const Color(0xFFB5AFBF),
+        )
+      : kColorScheme;
 
   return ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-    colorScheme: kColorScheme,
+    colorScheme: colorScheme,
     scaffoldBackgroundColor: AppColors.background,
     textTheme: text,
 

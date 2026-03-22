@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:stitch_music/l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 class GlassNavBar extends StatelessWidget {
@@ -14,14 +15,24 @@ class GlassNavBar extends StatelessWidget {
   });
 
   static const _items = [
-    _NavItem(icon: Icons.home_rounded,           label: 'Home'),
-    _NavItem(icon: Icons.explore_rounded,        label: 'Discover'),
-    _NavItem(icon: Icons.library_music_rounded,  label: 'Library'),
-    _NavItem(icon: Icons.person_rounded,         label: 'Profile'),
+    _NavItem(icon: Icons.home_rounded),
+    _NavItem(icon: Icons.explore_rounded),
+    _NavItem(icon: Icons.library_music_rounded),
+    _NavItem(icon: Icons.bar_chart_rounded),
+    _NavItem(icon: Icons.person_rounded),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final labels = [
+      l10n.navHome,
+      l10n.navDiscover,
+      l10n.navLibrary,
+      'Insights',
+      l10n.navProfile,
+    ];
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       child: ClipRRect(
@@ -74,7 +85,7 @@ class GlassNavBar extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            _items[i].label,
+                            labels[i],
                             style: GoogleFonts.manrope(
                               fontSize: 10,
                               fontWeight: active ? FontWeight.w800 : FontWeight.w500,
@@ -98,6 +109,5 @@ class GlassNavBar extends StatelessWidget {
 
 class _NavItem {
   final IconData icon;
-  final String label;
-  const _NavItem({required this.icon, required this.label});
+  const _NavItem({required this.icon});
 }

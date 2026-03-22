@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -8,6 +9,26 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/music_models.dart';
+import 'streaming/stream_discovery_models.dart';
+import 'cache_service.dart';
+import 'audio_effects_service.dart';
+import 'analytics_service.dart';
+
+enum QueueRepeatMode { none, one, all }
+
+// ---------------------------------------------------------------------------
+// Storage key registry — bump _kVersion to trigger migration of new fields.
+// ---------------------------------------------------------------------------
+const int _kVersion = 1;
+const String _kQueueIds   = 'v${_kVersion}_queue_ids';
+const String _kCurrentId  = 'v${_kVersion}_current_track_id';
+const String _kPositionMs = 'v${_kVersion}_position_ms';
+const String _kRepeatMode = 'v${_kVersion}_repeat_mode';
+const String _kShuffle    = 'v${_kVersion}_shuffle_enabled';
+const String _kFavorites  = 'v${_kVersion}_favorites';
+const String _kRecents    = 'v${_kVersion}_recents';
+const String _kPlaylists  = 'v${_kVersion}_playlists_json';
+const int _kMaxRecents = 30;
 
 class PlaybackController extends ChangeNotifier {
   PlaybackController._();
@@ -18,6 +39,7 @@ class PlaybackController extends ChangeNotifier {
 
   final List<Track> _library = [];
   final List<Track> _queue = [];
+  final List<Playlist> _playlists = [];
 
   bool _initialized = false;
   bool _isScanning = false;
@@ -25,6 +47,10 @@ class PlaybackController extends ChangeNotifier {
   PermissionStatus _permissionStatus = PermissionStatus.denied;
   DateTime? _lastScanAt;
   int _currentIndex = -1;
+  QueueRepeatMode _repeatMode = QueueRepeatMode.none;
+  bool _shuffleEnabled = false;
+  final Set<String> _favorites = {};
+  final List<Track> _recents = [];
 
   Timer? _persistDebounce;
 
@@ -37,6 +63,7 @@ class PlaybackController extends ChangeNotifier {
 
   List<Track> get library => List.unmodifiable(_library);
   List<Track> get queue => List.unmodifiable(_queue);
+  List<Playlist> get playlists => List.unmodifiable(_playlists);
   bool get isScanning => _isScanning;
   String? get scanError => _scanError;
   PermissionStatus get permissionStatus => _permissionStatus;
@@ -47,6 +74,13 @@ class PlaybackController extends ChangeNotifier {
       (_currentIndex >= 0 && _currentIndex < _queue.length) ? _queue[_currentIndex] : null;
   Duration get position => _position;
   Duration get duration => _duration;
+  double get volume => _player.volume;
+  double get speed => _player.speed;
+  QueueRepeatMode get repeatMode => _repeatMode;
+  bool get shuffleEnabled => _shuffleEnabled;
+  List<String> get favorites => List.unmodifiable(_favorites.toList());
+  List<Track> get recents => List.unmodifiable(_recents);
+  bool isFavorite(String trackId) => _favorites.contains(trackId);
 
   Future<void> init() async {
     if (_initialized) return;
@@ -73,8 +107,13 @@ class PlaybackController extends ChangeNotifier {
       notifyListeners();
     });
 
+    await CacheService.instance.init();
+    await AudioEffectsService.instance.init();
+    await AnalyticsService.instance.init();
     await scanDeviceLibrary();
+    await _restorePlaylists();
     await _restoreSessionState();
+    await _restoreFavoritesAndRecents();
   }
 
   Future<bool> _ensurePermissions() async {
@@ -152,6 +191,33 @@ class PlaybackController extends ChangeNotifier {
     await playAtIndex(idx < 0 ? 0 : idx);
   }
 
+  Future<void> addStreamCandidateToQueue({
+    required StreamCandidate candidate,
+    required Uri playbackUri,
+    bool playNow = false,
+  }) async {
+    final duration = candidate.duration;
+    final int durationMs = duration?.inMilliseconds ?? 0;
+    final track = Track(
+      id: 'stream_${candidate.provider}_${candidate.id}',
+      title: candidate.title,
+      artist: candidate.artist,
+      album: '${candidate.provider.toUpperCase()} Stream',
+      duration: _formatDuration(duration),
+      durationMs: durationMs,
+      uri: playbackUri.toString(),
+      filePath: null,
+    );
+
+    _queue.add(track);
+    _schedulePersist();
+    notifyListeners();
+
+    if (playNow) {
+      await playAtIndex(_queue.length - 1);
+    }
+  }
+
   Future<void> playAtIndex(int index) async {
     if (index < 0 || index >= _queue.length) return;
 
@@ -164,9 +230,20 @@ class PlaybackController extends ChangeNotifier {
     }
 
     try {
+      // End the previous play session (skipped=true if we're cutting across)
+      AnalyticsService.instance.recordPlayEnd(
+          secondsPlayed: _position.inSeconds, skipped: true);
       _currentIndex = index;
       _position = Duration.zero;
-      final uri = source.startsWith('content://') ? Uri.parse(source) : Uri.file(source);
+      _addToRecents(track);
+      AnalyticsService.instance.recordPlayStart(
+        trackId: track.id,
+        title: track.title,
+        artist: track.artist,
+        album: track.album,
+        durationMs: track.durationMs,
+      );
+      final uri = _toPlayableUri(source);
       await _player.setAudioSource(AudioSource.uri(uri));
       await _player.play();
       _schedulePersist();
@@ -203,11 +280,42 @@ class PlaybackController extends ChangeNotifier {
     _schedulePersist();
   }
 
+  Future<void> setVolume(double value) async {
+    await _player.setVolume(value.clamp(0.0, 1.0));
+    notifyListeners();
+  }
+
+  Future<void> setSpeed(double value) async {
+    await _player.setSpeed(value.clamp(0.5, 2.0));
+    notifyListeners();
+  }
+
+  void toggleShuffle() {
+    _shuffleEnabled = !_shuffleEnabled;
+    notifyListeners();
+  }
+
+  void cycleRepeat() {
+    _repeatMode = QueueRepeatMode.values[(_repeatMode.index + 1) % QueueRepeatMode.values.length];
+    notifyListeners();
+  }
+
   Future<void> skipNext() async {
     if (_queue.isEmpty) return;
+    if (_shuffleEnabled) {
+      final candidates = List.generate(_queue.length, (i) => i)
+          .where((i) => i != _currentIndex)
+          .toList();
+      if (candidates.isEmpty) return;
+      candidates.shuffle();
+      await playAtIndex(candidates.first);
+      return;
+    }
     final int next = _currentIndex + 1;
     if (next < _queue.length) {
       await playAtIndex(next);
+    } else if (_repeatMode == QueueRepeatMode.all) {
+      await playAtIndex(0);
     }
   }
 
@@ -225,7 +333,7 @@ class PlaybackController extends ChangeNotifier {
     }
   }
 
-  void reorderQueue(int oldIndex, int newIndex) {
+  Future<void> reorderQueue(int oldIndex, int newIndex) async {
     if (oldIndex < 0 || oldIndex >= _queue.length) return;
     if (newIndex < 0 || newIndex > _queue.length) return;
     if (newIndex > oldIndex) newIndex--;
@@ -244,10 +352,144 @@ class PlaybackController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> toggleFavorite(String trackId) async {
+    final bool added = !_favorites.contains(trackId);
+    if (_favorites.contains(trackId)) {
+      _favorites.remove(trackId);
+    } else {
+      _favorites.add(trackId);
+    }
+    AnalyticsService.instance.recordFavorite(trackId: trackId, added: added);
+    await _saveFavoritesAndRecents();
+    notifyListeners();
+  }
+
+  void _addToRecents(Track track) {
+    _recents.removeWhere((t) => t.id == track.id);
+    _recents.insert(0, track);
+    if (_recents.length > _kMaxRecents) _recents.removeLast();
+    _schedulePersist();
+  }
+
+  List<Track> tracksForPlaylist(String playlistId) {
+    final Playlist? playlist = _playlists.cast<Playlist?>().firstWhere(
+          (p) => p?.id == playlistId,
+          orElse: () => null,
+        );
+    if (playlist == null) return const <Track>[];
+
+    final List<Track> tracks = <Track>[];
+    for (final id in playlist.trackIds) {
+      final int idx = _library.indexWhere((t) => t.id == id);
+      if (idx >= 0) tracks.add(_library[idx]);
+    }
+    return tracks;
+  }
+
+  Future<void> createPlaylistFromQueue(String name) async {
+    final String trimmed = name.trim();
+    if (trimmed.isEmpty || _queue.isEmpty) return;
+
+    final String id = 'pl_${DateTime.now().millisecondsSinceEpoch}';
+    final List<String> ids = _queue.map((t) => t.id).toSet().toList();
+    final Playlist playlist = Playlist(
+      id: id,
+      name: trimmed,
+      trackIds: ids,
+      createdAt: DateTime.now(),
+    );
+
+    _playlists.insert(0, playlist);
+    await _savePlaylists();
+    notifyListeners();
+  }
+
+  Future<void> renamePlaylist(String playlistId, String newName) async {
+    final String trimmed = newName.trim();
+    if (trimmed.isEmpty) return;
+
+    final int idx = _playlists.indexWhere((p) => p.id == playlistId);
+    if (idx < 0) return;
+
+    _playlists[idx] = _playlists[idx].copyWith(name: trimmed);
+    await _savePlaylists();
+    notifyListeners();
+  }
+
+  Future<void> deletePlaylist(String playlistId) async {
+    _playlists.removeWhere((p) => p.id == playlistId);
+    await _savePlaylists();
+    notifyListeners();
+  }
+
+  Future<void> addTrackToPlaylist(String playlistId, String trackId) async {
+    final int idx = _playlists.indexWhere((p) => p.id == playlistId);
+    if (idx < 0) return;
+    final playlist = _playlists[idx];
+    if (playlist.trackIds.contains(trackId)) return;
+    _playlists[idx] = playlist.copyWith(trackIds: [...playlist.trackIds, trackId]);
+    await _savePlaylists();
+    notifyListeners();
+  }
+
+  Future<void> removeTrackFromPlaylist(String playlistId, String trackId) async {
+    final int idx = _playlists.indexWhere((p) => p.id == playlistId);
+    if (idx < 0) return;
+    final playlist = _playlists[idx];
+    final updated = playlist.trackIds.where((id) => id != trackId).toList();
+    _playlists[idx] = playlist.copyWith(trackIds: updated);
+    await _savePlaylists();
+    notifyListeners();
+  }
+
+  Future<void> reorderPlaylistTrack(String playlistId, int oldIndex, int newIndex) async {
+    final int idx = _playlists.indexWhere((p) => p.id == playlistId);
+    if (idx < 0) return;
+    final ids = List<String>.from(_playlists[idx].trackIds);
+    if (oldIndex < 0 || oldIndex >= ids.length) return;
+    if (newIndex > oldIndex) newIndex--;
+    final moved = ids.removeAt(oldIndex);
+    ids.insert(newIndex, moved);
+    _playlists[idx] = _playlists[idx].copyWith(trackIds: ids);
+    await _savePlaylists();
+    notifyListeners();
+  }
+
+  Future<void> playPlaylist(String playlistId, {int startIndex = 0}) async {
+    final tracks = tracksForPlaylist(playlistId);
+    if (tracks.isEmpty) {
+      _scanError = 'Playlist has no available tracks on this device.';
+      notifyListeners();
+      return;
+    }
+
+    _queue
+      ..clear()
+      ..addAll(tracks);
+
+    final int safeStart = startIndex.clamp(0, tracks.length - 1);
+    await playAtIndex(safeStart);
+  }
+
   Future<void> _handleTrackCompleted() async {
+    // Mark the completed track as listened fully (not skipped)
+    AnalyticsService.instance.recordPlayEnd(
+        secondsPlayed: _position.inSeconds, skipped: false);
+    if (_repeatMode == QueueRepeatMode.one) {
+      await playAtIndex(_currentIndex);
+      return;
+    }
+    if (_shuffleEnabled) {
+      await skipNext();
+      return;
+    }
     final int next = _currentIndex + 1;
     if (next < _queue.length) {
       await playAtIndex(next);
+      return;
+    }
+    if (_repeatMode == QueueRepeatMode.all) {
+      await playAtIndex(0);
       return;
     }
     await _player.pause();
@@ -265,20 +507,87 @@ class PlaybackController extends ChangeNotifier {
   Future<void> _saveSessionState() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList('queue_ids', _queue.map((t) => t.id).toList());
-      await prefs.setString('current_track_id', currentTrack?.id ?? '');
-      await prefs.setInt('position_ms', _position.inMilliseconds);
+      await prefs.setStringList(_kQueueIds, _queue.map((t) => t.id).toList());
+      await prefs.setString(_kCurrentId, currentTrack?.id ?? '');
+      await prefs.setInt(_kPositionMs, _position.inMilliseconds);
+      await prefs.setInt(_kRepeatMode, _repeatMode.index);
+      await prefs.setBool(_kShuffle, _shuffleEnabled);
     } catch (_) {
       // Keep runtime resilient if persistence fails.
+    }
+  }
+
+  Future<void> _savePlaylists() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final payload = jsonEncode(_playlists.map((p) => p.toMap()).toList());
+      await prefs.setString(_kPlaylists, payload);
+    } catch (_) {
+      // Keep runtime resilient if persistence fails.
+    }
+  }
+
+  Future<void> _saveFavoritesAndRecents() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(_kFavorites, _favorites.toList());
+      await prefs.setStringList(_kRecents, _recents.map((t) => t.id).toList());
+    } catch (_) {}
+  }
+
+  Future<void> _restoreFavoritesAndRecents() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final favIds = prefs.getStringList(_kFavorites) ?? [];
+      _favorites
+        ..clear()
+        ..addAll(favIds);
+      final recentIds = prefs.getStringList(_kRecents) ?? [];
+      _recents.clear();
+      for (final id in recentIds) {
+        final idx = _library.indexWhere((t) => t.id == id);
+        if (idx >= 0) _recents.add(_library[idx]);
+      }
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  Future<void> _restorePlaylists() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      // Migrate legacy key on first run with versioned storage.
+      final String raw = prefs.getString(_kPlaylists) ?? prefs.getString('playlists_json') ?? '';
+      if (raw.isEmpty) return;
+
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) return;
+
+      final restored = <Playlist>[];
+      for (final item in decoded) {
+        if (item is Map<String, dynamic>) {
+          restored.add(Playlist.fromMap(item));
+          continue;
+        }
+        if (item is Map) {
+          restored.add(Playlist.fromMap(item.map((k, v) => MapEntry(k.toString(), v))));
+        }
+      }
+
+      _playlists
+        ..clear()
+        ..addAll(restored);
+    } catch (_) {
+      // Restore is best-effort.
     }
   }
 
   Future<void> _restoreSessionState() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final ids = prefs.getStringList('queue_ids') ?? const <String>[];
-      final currentId = prefs.getString('current_track_id') ?? '';
-      final posMs = prefs.getInt('position_ms') ?? 0;
+      // Migrate legacy keys on first run with versioned storage.
+      final ids = prefs.getStringList(_kQueueIds) ?? prefs.getStringList('queue_ids') ?? [];
+      final currentId = prefs.getString(_kCurrentId) ?? prefs.getString('current_track_id') ?? '';
+      final posMs = prefs.getInt(_kPositionMs) ?? prefs.getInt('position_ms') ?? 0;
 
       if (ids.isNotEmpty) {
         final restored = <Track>[];
@@ -302,15 +611,34 @@ class PlaybackController extends ChangeNotifier {
       final track = _queue[_currentIndex];
       final source = track.uri ?? track.filePath;
       if (source == null || source.isEmpty) return;
-      final uri = source.startsWith('content://') ? Uri.parse(source) : Uri.file(source);
+      final uri = _toPlayableUri(source);
       await _player.setAudioSource(AudioSource.uri(uri));
       if (posMs > 0) {
         await _player.seek(Duration(milliseconds: posMs));
       }
+      final repeatIdx = prefs.getInt('repeat_mode') ?? 0;
+      _repeatMode = QueueRepeatMode.values[repeatIdx.clamp(0, QueueRepeatMode.values.length - 1)];
+      _shuffleEnabled = prefs.getBool('shuffle_enabled') ?? false;
       notifyListeners();
     } catch (_) {
       // Restore is best-effort.
     }
+  }
+
+  @visibleForTesting
+  void loadQueueForTest(List<Track> tracks) {
+    _library
+      ..clear()
+      ..addAll(tracks);
+    _queue
+      ..clear()
+      ..addAll(tracks);
+    _playlists.clear();
+    _favorites.clear();
+    _recents.clear();
+    _currentIndex = -1;
+    _scanError = null;
+    notifyListeners();
   }
 
   Future<void> disposeController() async {
@@ -320,5 +648,52 @@ class PlaybackController extends ChangeNotifier {
     await _durationSub?.cancel();
     await _playerStateSub?.cancel();
     await _player.dispose();
+  }
+
+  @visibleForTesting
+  void debugSeedQueueForTests({
+    required List<Track> queue,
+    int currentIndex = 0,
+    bool isPlaying = false,
+  }) {
+    _queue
+      ..clear()
+      ..addAll(queue);
+    _currentIndex = queue.isEmpty ? -1 : currentIndex.clamp(0, queue.length - 1);
+    _position = Duration.zero;
+    final track = currentTrack;
+    _duration = track == null
+        ? Duration.zero
+        : Duration(milliseconds: track.durationMs > 0 ? track.durationMs : 240000);
+    if (!isPlaying) {
+      _player.pause();
+    }
+    notifyListeners();
+  }
+
+  @visibleForTesting
+  void debugResetStateForTests() {
+    _queue.clear();
+    _currentIndex = -1;
+    _position = Duration.zero;
+    _duration = Duration.zero;
+    _scanError = null;
+    notifyListeners();
+  }
+
+  Uri _toPlayableUri(String source) {
+    if (source.startsWith('content://') ||
+        source.startsWith('http://') ||
+        source.startsWith('https://')) {
+      return Uri.parse(source);
+    }
+    return Uri.file(source);
+  }
+
+  String _formatDuration(Duration? duration) {
+    if (duration == null) return '0:00';
+    final int minutes = duration.inMinutes;
+    final int seconds = duration.inSeconds % 60;
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 }
