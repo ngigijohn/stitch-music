@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:stitch_music/l10n/app_localizations.dart';
 
+import '../services/app_preferences_service.dart';
 import '../services/audio_effects_service.dart';
 import '../theme/app_theme.dart';
+import 'cache_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -13,16 +16,20 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final AudioEffectsService _eq = AudioEffectsService.instance;
+  final AppPreferencesService _prefs = AppPreferencesService.instance;
 
   @override
   void initState() {
     super.initState();
     _eq.addListener(_onUpdate);
+    _prefs.addListener(_onUpdate);
+    _prefs.init();
   }
 
   @override
   void dispose() {
     _eq.removeListener(_onUpdate);
+    _prefs.removeListener(_onUpdate);
     super.dispose();
   }
 
@@ -31,6 +38,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final bands = _eq.activeBands;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -49,7 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: const EdgeInsets.fromLTRB(20, 0, 0, 16),
               title: Text(
-                'Settings',
+                l10n.profileSettings,
                 style: GoogleFonts.epilogue(
                   fontWeight: FontWeight.w900,
                   fontSize: 22,
@@ -62,12 +70,107 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _SectionHeader(label: 'Audio Effects'),
+                _SectionHeader(label: l10n.settingsLanguageSection),
+                _Tile(
+                  leading: const Icon(Icons.language_rounded, color: AppColors.primary),
+                  title: l10n.settingsLanguageLabel,
+                  subtitle: _languageSubtitle(l10n),
+                  trailing: DropdownButton<String?>(
+                    value: _prefs.localeCode,
+                    underline: const SizedBox.shrink(),
+                    dropdownColor: AppColors.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(16),
+                    onChanged: (value) {
+                      _prefs.setLocaleCode(value);
+                    },
+                    items: [
+                      DropdownMenuItem<String?>(
+                        value: null,
+                        child: Text(l10n.settingsLanguageSystem),
+                      ),
+                      DropdownMenuItem<String?>(
+                        value: 'en',
+                        child: Text(l10n.settingsLanguageEnglish),
+                      ),
+                      DropdownMenuItem<String?>(
+                        value: 'es',
+                        child: Text(l10n.settingsLanguageSpanish),
+                      ),
+                      DropdownMenuItem<String?>(
+                        value: 'fr',
+                        child: Text(l10n.settingsLanguageFrench),
+                      ),
+                      DropdownMenuItem<String?>(
+                        value: 'de',
+                        child: Text(l10n.settingsLanguageGerman),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _SectionHeader(label: l10n.settingsAccessibilitySection),
+                _Tile(
+                  leading: const Icon(Icons.contrast_rounded, color: AppColors.primary),
+                  title: l10n.settingsHighContrastTitle,
+                  subtitle: l10n.settingsHighContrastSubtitle,
+                  trailing: Switch.adaptive(
+                    value: _prefs.highContrast,
+                    onChanged: _prefs.setHighContrast,
+                    activeThumbColor: AppColors.primary,
+                    activeTrackColor: AppColors.primary.withValues(alpha: 0.5),
+                  ),
+                ),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                  leading: const Icon(Icons.accessibility_new_rounded, color: AppColors.primary),
+                  title: Text(
+                    l10n.settingsAccessibilityRoadmapTitle,
+                    style: GoogleFonts.manrope(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      color: AppColors.onSurface,
+                    ),
+                  ),
+                  subtitle: Text(
+                    l10n.settingsAccessibilityRoadmapSubtitle,
+                    style: GoogleFonts.manrope(
+                      fontSize: 12,
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _SectionHeader(label: l10n.settingsGeneralSection),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                  leading: const Icon(Icons.download_rounded, color: AppColors.primary),
+                  title: Text(
+                    l10n.settingsOfflineTitle,
+                    style: GoogleFonts.manrope(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      color: AppColors.onSurface,
+                    ),
+                  ),
+                  subtitle: Text(
+                    l10n.settingsOfflineSubtitle,
+                    style: GoogleFonts.manrope(
+                      fontSize: 12,
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.onSurfaceVariant),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const CacheSettingsScreen()),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _SectionHeader(label: l10n.settingsAudioSection),
                 // Enable toggle
                 _Tile(
                   leading: const Icon(Icons.equalizer_rounded, color: AppColors.primary),
-                  title: 'Equalizer',
-                  subtitle: _eq.isEnabled ? 'Active — ${_eq.activePreset.name}' : 'Disabled',
+                  title: l10n.settingsEqTitle,
+                  subtitle: _eq.isEnabled ? '${l10n.settingsEnabledLabel} - ${_eq.activePreset.name}' : l10n.settingsDisabledLabel,
                   trailing: Switch.adaptive(
                     value: _eq.isEnabled,
                     onChanged: _eq.setEnabled,
@@ -80,7 +183,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
-                    'Preset',
+                    l10n.settingsPresetLabel,
                     style: GoogleFonts.manrope(
                       fontWeight: FontWeight.w700,
                       fontSize: 13,
@@ -125,7 +228,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
-                    'Custom EQ',
+                    l10n.settingsCustomEqLabel,
                     style: GoogleFonts.manrope(
                       fontWeight: FontWeight.w700,
                       fontSize: 13,
@@ -207,7 +310,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onPressed: _eq.resetToFlat,
                     icon: const Icon(Icons.refresh_rounded, size: 16),
                     label: Text(
-                      'Reset to Flat',
+                      l10n.settingsResetEq,
                       style: GoogleFonts.manrope(
                           fontSize: 13, fontWeight: FontWeight.w700),
                     ),
@@ -223,6 +326,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
       ),
     );
+  }
+
+  String _languageSubtitle(AppLocalizations l10n) {
+    switch (_prefs.localeCode) {
+      case 'en':
+        return l10n.settingsLanguageEnglish;
+      case 'es':
+        return l10n.settingsLanguageSpanish;
+      case 'fr':
+        return l10n.settingsLanguageFrench;
+      case 'de':
+        return l10n.settingsLanguageGerman;
+      default:
+        return l10n.settingsLanguageSystem;
+    }
   }
 }
 

@@ -126,4 +126,74 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get grantMusicPermission => 'Autoriser l\'acces a la musique';
+
+  @override
+  String get settingsLanguageSection => 'Langue';
+
+  @override
+  String get settingsLanguageLabel => 'Langue de l\'application';
+
+  @override
+  String get settingsLanguageSystem => 'Par defaut du systeme';
+
+  @override
+  String get settingsLanguageEnglish => 'Anglais';
+
+  @override
+  String get settingsLanguageSpanish => 'Espagnol';
+
+  @override
+  String get settingsLanguageFrench => 'Francais';
+
+  @override
+  String get settingsLanguageGerman => 'Allemand';
+
+  @override
+  String get settingsAccessibilitySection => 'Accessibilite';
+
+  @override
+  String get settingsHighContrastTitle => 'Mode contraste eleve';
+
+  @override
+  String get settingsHighContrastSubtitle =>
+      'Augmente le contraste du texte et des surfaces principales';
+
+  @override
+  String get settingsAccessibilityRoadmapTitle =>
+      'Plus de controles d\'accessibilite';
+
+  @override
+  String get settingsAccessibilityRoadmapSubtitle =>
+      'Semantique lecteur d\'ecran, ajustements du focus et ameliorations de l\'echelle du texte en cours';
+
+  @override
+  String get settingsGeneralSection => 'General';
+
+  @override
+  String get settingsOfflineTitle => 'Hors ligne et cache';
+
+  @override
+  String get settingsOfflineSubtitle =>
+      'Gerer les epingles, limites de cache et comportement hors ligne';
+
+  @override
+  String get settingsAudioSection => 'Effets audio';
+
+  @override
+  String get settingsEqTitle => 'Egaliseur';
+
+  @override
+  String get settingsEnabledLabel => 'Actif';
+
+  @override
+  String get settingsDisabledLabel => 'Desactive';
+
+  @override
+  String get settingsPresetLabel => 'Preset';
+
+  @override
+  String get settingsCustomEqLabel => 'EQ personnalise';
+
+  @override
+  String get settingsResetEq => 'Reinitialiser a plat';
 }

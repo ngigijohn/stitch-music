@@ -323,6 +323,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Grant music permission'**
   String get grantMusicPermission;
+
+  /// No description provided for @settingsLanguageSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguageSection;
+
+  /// No description provided for @settingsLanguageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'App language'**
+  String get settingsLanguageLabel;
+
+  /// No description provided for @settingsLanguageSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System default'**
+  String get settingsLanguageSystem;
+
+  /// No description provided for @settingsLanguageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get settingsLanguageEnglish;
+
+  /// No description provided for @settingsLanguageSpanish.
+  ///
+  /// In en, this message translates to:
+  /// **'Spanish'**
+  String get settingsLanguageSpanish;
+
+  /// No description provided for @settingsLanguageFrench.
+  ///
+  /// In en, this message translates to:
+  /// **'French'**
+  String get settingsLanguageFrench;
+
+  /// No description provided for @settingsLanguageGerman.
+  ///
+  /// In en, this message translates to:
+  /// **'German'**
+  String get settingsLanguageGerman;
+
+  /// No description provided for @settingsAccessibilitySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Accessibility'**
+  String get settingsAccessibilitySection;
+
+  /// No description provided for @settingsHighContrastTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'High contrast mode'**
+  String get settingsHighContrastTitle;
+
+  /// No description provided for @settingsHighContrastSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase contrast for text and key surfaces'**
+  String get settingsHighContrastSubtitle;
+
+  /// No description provided for @settingsAccessibilityRoadmapTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'More accessibility controls'**
+  String get settingsAccessibilityRoadmapTitle;
+
+  /// No description provided for @settingsAccessibilityRoadmapSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Screen reader semantics, focus tuning, and text scaling refinements are in progress'**
+  String get settingsAccessibilityRoadmapSubtitle;
+
+  /// No description provided for @settingsGeneralSection.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get settingsGeneralSection;
+
+  /// No description provided for @settingsOfflineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline and cache'**
+  String get settingsOfflineTitle;
+
+  /// No description provided for @settingsOfflineSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage pins, cache limits, and offline behavior'**
+  String get settingsOfflineSubtitle;
+
+  /// No description provided for @settingsAudioSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio effects'**
+  String get settingsAudioSection;
+
+  /// No description provided for @settingsEqTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Equalizer'**
+  String get settingsEqTitle;
+
+  /// No description provided for @settingsEnabledLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get settingsEnabledLabel;
+
+  /// No description provided for @settingsDisabledLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Disabled'**
+  String get settingsDisabledLabel;
+
+  /// No description provided for @settingsPresetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Preset'**
+  String get settingsPresetLabel;
+
+  /// No description provided for @settingsCustomEqLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom EQ'**
+  String get settingsCustomEqLabel;
+
+  /// No description provided for @settingsResetEq.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to Flat'**
+  String get settingsResetEq;
 }
 
 class _AppLocalizationsDelegate

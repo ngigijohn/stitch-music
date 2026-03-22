@@ -11,23 +11,23 @@ Last updated: 2026-03-22
 
 ## In Progress
 
-- Core i18n scaffolding is merged; remaining screen localization, locale persistence, RTL, semantics, and high-contrast work are still open
+- Phase 3 settings expansion is underway: persisted language selector and high-contrast toggle are now implemented, with broader a11y rollout still open
 - Online discovery currently runs in demo or fail-closed mode; official auth, entitlement refresh, and playback URI resolution remain pending
 - Recently merged feature streams (offline cache, audio effects, export/share, insights, i18n) need an end-to-end UX completion pass and regression coverage
 
 ## Next Up
 
-- Implement dormant controls and placeholder screens per `docs/functional-completion-plan.md`
-- Add a persisted language selector in Settings and finish localization across Home, Now Playing, Settings, Insights, playlists, dialogs, and banners
+- Complete remaining Phase 3 settings controls and accessibility affordances (RTL checks, semantics, text scaling behavior)
+- Finish localization coverage across Home, Now Playing, Insights, playlists, dialogs, and banners
 - Replace the discovery-only online search path with compliant, entitlement-gated playback integration
 - Expand widget and integration coverage for merged navigation, playback, cache, and streaming flows
 - Add CI release gates for `flutter analyze`, `flutter test`, and debug build validation
 
 ## Functional Gaps To Close
 
-- Home screen: `See All`, featured album CTA, top action menu, and online playback messaging still need real behavior
-- Now Playing: more menu, devices output picker, and volume/speed pills are still inert or incomplete
-- Profile screen: layout is still a placeholder and menu actions are no-ops
+- Home screen: online playback messaging and recommendation follow-through need refinement
+- Now Playing: device routing is still first-pass and can be deepened with platform route-pickers
+- Profile screen: continue enriching profile/account behaviors and personalization
 - Online Search / streaming: discovery works, but remote playback remains intentionally blocked until official provider integration is available
 - Insights: empty states still need richer drill-down and recommendation follow-through
 
@@ -48,6 +48,9 @@ Last updated: 2026-03-22
 - Export and share UI for playlists and tracks
 - Analytics service, insights dashboard, and insights navigation tab
 - Core i18n scaffolding plus initial localization of shell, library, and profile surfaces
+- Phase 1 functional completion for Home, Now Playing, and Profile no-op controls
+- Phase 2 profile hub upgrades with persisted local identity fields
+- Phase 3 start: persisted language selector, high-contrast toggle, and expanded Settings information architecture
 - QA baseline tests (model mapping, theme contract, app shell smoke)
 - Branch workflow and CI scaffolding for parallel agents
 

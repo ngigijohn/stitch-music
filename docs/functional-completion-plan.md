@@ -82,7 +82,7 @@ Acceptance criteria:
 
 ### Phase 2: Turn Profile Into A Real Hub
 
-Status: In progress
+Status: Completed and merged into `sprint/current`
 
 Objective: make Profile the place where user-oriented features converge instead of leaving settings and history fragmented.
 
@@ -110,6 +110,8 @@ Acceptance criteria:
 
 ### Phase 3: Finish Settings As The App Control Center
 
+Status: In progress
+
 Objective: expand Settings beyond EQ so it can host the next wave of product controls.
 
 Work:
@@ -118,6 +120,12 @@ Work:
 2. Add accessibility section placeholders with working toggles where implementation exists.
 3. Link to cache/offline settings and high-contrast mode once available.
 4. Keep EQ controls in place as one section of a broader settings experience.
+
+Started in this phase:
+
+- Added `AppPreferencesService` for persisted locale and high-contrast preferences.
+- Wired app-level locale + high-contrast handling in `main.dart`.
+- Expanded `SettingsScreen` with Language, Accessibility, General, and Audio sections.
 
 Primary files:
 

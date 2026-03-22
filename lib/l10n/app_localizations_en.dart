@@ -125,4 +125,73 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get grantMusicPermission => 'Grant music permission';
+
+  @override
+  String get settingsLanguageSection => 'Language';
+
+  @override
+  String get settingsLanguageLabel => 'App language';
+
+  @override
+  String get settingsLanguageSystem => 'System default';
+
+  @override
+  String get settingsLanguageEnglish => 'English';
+
+  @override
+  String get settingsLanguageSpanish => 'Spanish';
+
+  @override
+  String get settingsLanguageFrench => 'French';
+
+  @override
+  String get settingsLanguageGerman => 'German';
+
+  @override
+  String get settingsAccessibilitySection => 'Accessibility';
+
+  @override
+  String get settingsHighContrastTitle => 'High contrast mode';
+
+  @override
+  String get settingsHighContrastSubtitle =>
+      'Increase contrast for text and key surfaces';
+
+  @override
+  String get settingsAccessibilityRoadmapTitle => 'More accessibility controls';
+
+  @override
+  String get settingsAccessibilityRoadmapSubtitle =>
+      'Screen reader semantics, focus tuning, and text scaling refinements are in progress';
+
+  @override
+  String get settingsGeneralSection => 'General';
+
+  @override
+  String get settingsOfflineTitle => 'Offline and cache';
+
+  @override
+  String get settingsOfflineSubtitle =>
+      'Manage pins, cache limits, and offline behavior';
+
+  @override
+  String get settingsAudioSection => 'Audio effects';
+
+  @override
+  String get settingsEqTitle => 'Equalizer';
+
+  @override
+  String get settingsEnabledLabel => 'Enabled';
+
+  @override
+  String get settingsDisabledLabel => 'Disabled';
+
+  @override
+  String get settingsPresetLabel => 'Preset';
+
+  @override
+  String get settingsCustomEqLabel => 'Custom EQ';
+
+  @override
+  String get settingsResetEq => 'Reset to Flat';
 }
