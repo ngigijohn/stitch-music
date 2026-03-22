@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/music_models.dart';
 import 'cache_service.dart';
+import 'audio_effects_service.dart';
 
 enum QueueRepeatMode { none, one, all }
 
@@ -103,6 +104,8 @@ class PlaybackController extends ChangeNotifier {
     });
 
     await CacheService.instance.init();
+    await AudioEffectsService.instance.init();
+  await CacheService.instance.init();
     await scanDeviceLibrary();
     await _restorePlaylists();
     await _restoreSessionState();
