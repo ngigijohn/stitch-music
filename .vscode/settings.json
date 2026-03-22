@@ -6,6 +6,7 @@
       "approve": true,
       "matchCommandLine": true
     },
-    "git push": true
+    "git push": true,
+    "git fetch": true
   }
 }
