@@ -99,6 +99,15 @@ class CacheService extends ChangeNotifier {
     notifyListeners();
   }
 
+  @visibleForTesting
+  Future<void> debugResetForTests() async {
+    _initialized = false;
+    _offlineMode = false;
+    _pinnedIds.clear();
+    _limitMb = _kDefaultLimitMb;
+    await init();
+  }
+
   // ── Persistence ───────────────────────────────────────────────────────────────
 
   Future<void> _load() async {
