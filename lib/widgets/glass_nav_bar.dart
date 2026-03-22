@@ -17,6 +17,7 @@ class GlassNavBar extends StatelessWidget {
     _NavItem(icon: Icons.home_rounded,           label: 'Home'),
     _NavItem(icon: Icons.explore_rounded,        label: 'Discover'),
     _NavItem(icon: Icons.library_music_rounded,  label: 'Library'),
+    _NavItem(icon: Icons.bar_chart_rounded,      label: 'Insights'),
     _NavItem(icon: Icons.person_rounded,         label: 'Profile'),
   ];
 

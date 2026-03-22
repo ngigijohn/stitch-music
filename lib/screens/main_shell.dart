@@ -4,6 +4,7 @@ import '../theme/app_theme.dart';
 import '../widgets/mini_player.dart';
 import '../widgets/glass_nav_bar.dart';
 import 'home_screen.dart';
+import 'insights_screen.dart';
 import 'library_screen.dart';
 import 'playlists_screen.dart';
 import 'profile_screen.dart';
@@ -24,6 +25,7 @@ class _MainShellState extends State<MainShell> {
     HomeScreen(),
     PlaylistsScreen(),
     LibraryScreen(),
+    InsightsScreen(),
     ProfileScreen(),
   ];
 
