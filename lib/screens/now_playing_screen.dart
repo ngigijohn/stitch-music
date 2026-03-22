@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../services/audio_effects_service.dart';
+import '../services/export_service.dart';
 import '../services/playback_controller.dart';
 import '../theme/app_theme.dart';
 import 'queue_screen.dart';
@@ -333,7 +335,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
           isActive: eq.isEnabled && eq.activePresetId != EqPresetId.normal,
           onTap: () => _showEqPanel(context),
         ),
-        const _Pill(icon: Icons.share_rounded, label: 'Share'),
+        _Pill(
+          icon: Icons.share_rounded,
+          label: 'Share',
+          onTap: () => _showTrackShareSheet(context),
+        ),
       ],
     );
   }
@@ -364,7 +370,11 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
                 );
               },
             ),
-            _BottomBarBtn(icon: Icons.share_rounded, label: 'Share', onTap: () {}),
+            _BottomBarBtn(
+              icon: Icons.share_rounded,
+              label: 'Share',
+              onTap: () => _showTrackShareSheet(context),
+            ),
           ],
         ),
       ),
@@ -375,6 +385,166 @@ class _NowPlayingScreenState extends State<NowPlayingScreen>
     final int m = d.inMinutes;
     final int s = d.inSeconds % 60;
     return '$m:${s.toString().padLeft(2, '0')}';
+  }
+
+  void _showEqPanel(BuildContext context) {
+  void _showTrackShareSheet(BuildContext context) {
+    final track = _playback.currentTrack;
+    if (track == null) return;
+    final export = ExportService.instance;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        margin: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+              color: AppColors.outlineVariant.withValues(alpha: 0.45)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  const Icon(Icons.share_rounded,
+                      color: AppColors.primary, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      track.title,
+                      style: GoogleFonts.epilogue(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                        color: AppColors.onSurface,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 2, 20, 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '${track.artist} • ${track.album}',
+                  style: GoogleFonts.manrope(
+                    fontSize: 12,
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ),
+            const Divider(indent: 20, endIndent: 20),
+            ListTile(
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.copy_rounded,
+                    color: AppColors.primary, size: 20),
+              ),
+              title: Text(
+                'Copy track info',
+                style: GoogleFonts.manrope(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.onSurface,
+                ),
+              ),
+              subtitle: Text(
+                export.trackInline(track),
+                style: GoogleFonts.manrope(
+                    fontSize: 11,
+                    color: AppColors.onSurfaceVariant),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              trailing: const Icon(Icons.copy_rounded,
+                  size: 16, color: AppColors.onSurfaceVariant),
+              onTap: () {
+                Clipboard.setData(
+                    ClipboardData(text: export.trackCard(track)));
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Track info copied to clipboard'),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.secondary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.format_list_bulleted_rounded,
+                    color: AppColors.secondary, size: 20),
+              ),
+              title: Text(
+                'Copy full queue as track list',
+                style: GoogleFonts.manrope(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.onSurface,
+                ),
+              ),
+              subtitle: Text(
+                '${_playback.queue.length} tracks in current queue',
+                style: GoogleFonts.manrope(
+                    fontSize: 11,
+                    color: AppColors.onSurfaceVariant),
+              ),
+              trailing: const Icon(Icons.copy_rounded,
+                  size: 16, color: AppColors.onSurfaceVariant),
+              onTap: () {
+                final queueText = _playback.queue
+                    .asMap()
+                    .entries
+                    .map((e) =>
+                        '${(e.key + 1).toString().padLeft(2)}. ${e.value.artist} - ${e.value.title}  [${e.value.duration}]')
+                    .join('\n');
+                Clipboard.setData(ClipboardData(text: queueText));
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Queue copied to clipboard'),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showEqPanel(BuildContext context) {
@@ -428,7 +598,9 @@ class _Pill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          color: AppColors.surfaceContainerHigh,
+          color: onTap != null
+              ? AppColors.surfaceContainerHigh
+              : AppColors.surfaceContainerHigh.withValues(alpha: 0.5),
           border: isActive
               ? Border.all(color: AppColors.primary.withValues(alpha: 0.6))
               : null,
