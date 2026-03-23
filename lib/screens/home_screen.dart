@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../models/music_models.dart';
+import 'album_detail_screen.dart';
+import 'artist_detail_screen.dart';
 import 'now_playing_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -344,7 +346,18 @@ class _SmallArtistCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      onTap: () {
+        final tracks = kQueueTracks.where((t) => t.artist == name).toList();
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => ArtistDetailScreen(
+            artistName: name,
+            dominantColor: const Color(0xFF7C4DFF),
+            tracks: tracks.isNotEmpty ? tracks : kQueueTracks.take(3).toList(),
+          ),
+        ));
+      },
+      child: Container(
       height: 94,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
@@ -374,6 +387,7 @@ class _SmallArtistCard extends StatelessWidget {
           Text(role, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.onSurfaceVariant)),
         ],
       ),
+    ),
     );
   }
 }
@@ -570,7 +584,17 @@ class _NewReleasesSection extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       FilledButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          final velvetTracks = kQueueTracks.where((t) => t.album == 'Velvet Clouds').toList();
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (_) => AlbumDetailScreen(
+                              albumTitle: 'Velvet Clouds',
+                              artist: 'Luminous Theory',
+                              dominantColor: const Color(0xFF8B5CF6),
+                              tracks: velvetTracks.isNotEmpty ? velvetTracks : kQueueTracks.take(4).toList(),
+                            ),
+                          ));
+                        },
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.primaryDim,
                           foregroundColor: AppColors.onPrimary,
@@ -600,7 +624,19 @@ class _NewReleaseRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return GestureDetector(
+      onTap: () {
+        final albumTracks = kLibraryTracks.where((t) => t.album == track.album).toList();
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => AlbumDetailScreen(
+            albumTitle: track.album,
+            artist: track.artist,
+            dominantColor: track.dominantColor,
+            tracks: albumTracks.isNotEmpty ? albumTracks : [track],
+          ),
+        ));
+      },
+      child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       child: Container(
         decoration: BoxDecoration(
@@ -633,6 +669,7 @@ class _NewReleaseRow extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }

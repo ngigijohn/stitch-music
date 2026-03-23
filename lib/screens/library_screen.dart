@@ -5,6 +5,8 @@ import 'package:permission_handler/permission_handler.dart';
 import '../models/music_models.dart';
 import '../services/playback_controller.dart';
 import '../theme/app_theme.dart';
+import 'album_detail_screen.dart';
+import 'artist_detail_screen.dart';
 import 'now_playing_screen.dart';
 
 class LibraryScreen extends StatefulWidget {
@@ -318,10 +320,92 @@ class _TrackRow extends StatelessWidget {
 
   const _TrackRow({required this.track, required this.isPlaying, required this.onTap});
 
+  void _showContextMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(28),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.outlineVariant, borderRadius: BorderRadius.circular(99))),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: track.dominantColor.withValues(alpha: 0.3)),
+                    child: Icon(Icons.music_note_rounded, color: track.dominantColor, size: 24),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(track.title, style: GoogleFonts.manrope(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.onSurface), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        Text(track.artist, style: GoogleFonts.manrope(fontSize: 12, color: AppColors.onSurfaceVariant)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Divider(color: AppColors.outlineVariant, indent: 24, endIndent: 24, height: 1),
+            _ContextMenuItem(
+              icon: Icons.album_rounded,
+              label: 'View Album',
+              onTap: () {
+                Navigator.pop(context);
+                final library = PlaybackController.instance.library;
+                final albumTracks = library.where((t) => t.album == track.album).toList();
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => AlbumDetailScreen(
+                    albumTitle: track.album,
+                    artist: track.artist,
+                    dominantColor: track.dominantColor,
+                    tracks: albumTracks.isNotEmpty ? albumTracks : [track],
+                  ),
+                ));
+              },
+            ),
+            _ContextMenuItem(
+              icon: Icons.person_rounded,
+              label: 'View Artist',
+              onTap: () {
+                Navigator.pop(context);
+                final library = PlaybackController.instance.library;
+                final artistTracks = library.where((t) => t.artist == track.artist).toList();
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => ArtistDetailScreen(
+                    artistName: track.artist,
+                    dominantColor: track.dominantColor,
+                    tracks: artistTracks.isNotEmpty ? artistTracks : [track],
+                  ),
+                ));
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      onLongPress: () => _showContextMenu(context),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
@@ -380,7 +464,42 @@ class _TrackRow extends StatelessWidget {
               style: GoogleFonts.manrope(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.onSurfaceVariant),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.more_vert_rounded, color: AppColors.onSurfaceVariant, size: 18),
+            GestureDetector(
+              onTap: () => _showContextMenu(context),
+              child: const Icon(Icons.more_vert_rounded, color: AppColors.onSurfaceVariant, size: 18),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ContextMenuItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _ContextMenuItem({required this.icon, required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+        child: Row(
+          children: [
+            Icon(icon, color: AppColors.onSurfaceVariant, size: 22),
+            const SizedBox(width: 16),
+            Text(
+              label,
+              style: GoogleFonts.manrope(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: AppColors.onSurface,
+              ),
+            ),
           ],
         ),
       ),
