@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -26,6 +27,9 @@ class PlaybackController extends ChangeNotifier {
   DateTime? _lastScanAt;
   int _currentIndex = -1;
 
+  bool _isShuffle = false;
+  int _repeatMode = 0; // 0 = off, 1 = all, 2 = one
+
   Timer? _persistDebounce;
 
   StreamSubscription<Duration>? _positionSub;
@@ -47,6 +51,8 @@ class PlaybackController extends ChangeNotifier {
       (_currentIndex >= 0 && _currentIndex < _queue.length) ? _queue[_currentIndex] : null;
   Duration get position => _position;
   Duration get duration => _duration;
+  bool get isShuffle => _isShuffle;
+  int get repeatMode => _repeatMode;
 
   Future<void> init() async {
     if (_initialized) return;
@@ -244,12 +250,49 @@ class PlaybackController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void toggleShuffle() {
+    _isShuffle = !_isShuffle;
+    _schedulePersist();
+    notifyListeners();
+  }
+
+  void cycleRepeat() {
+    _repeatMode = (_repeatMode + 1) % 3;
+    _schedulePersist();
+    notifyListeners();
+  }
+
   Future<void> _handleTrackCompleted() async {
+    // Repeat one: restart the current track
+    if (_repeatMode == 2) {
+      await _player.seek(Duration.zero);
+      await _player.play();
+      return;
+    }
+
+    // Shuffle: pick a random next track
+    if (_isShuffle && _queue.length > 1) {
+      final rng = Random();
+      int next;
+      do {
+        next = rng.nextInt(_queue.length);
+      } while (next == _currentIndex);
+      await playAtIndex(next);
+      return;
+    }
+
     final int next = _currentIndex + 1;
     if (next < _queue.length) {
       await playAtIndex(next);
       return;
     }
+
+    // Repeat all: wrap back to first track
+    if (_repeatMode == 1 && _queue.isNotEmpty) {
+      await playAtIndex(0);
+      return;
+    }
+
     await _player.pause();
     await _player.seek(Duration.zero);
     _position = Duration.zero;
@@ -268,6 +311,8 @@ class PlaybackController extends ChangeNotifier {
       await prefs.setStringList('queue_ids', _queue.map((t) => t.id).toList());
       await prefs.setString('current_track_id', currentTrack?.id ?? '');
       await prefs.setInt('position_ms', _position.inMilliseconds);
+      await prefs.setBool('is_shuffle', _isShuffle);
+      await prefs.setInt('repeat_mode', _repeatMode);
     } catch (_) {
       // Keep runtime resilient if persistence fails.
     }
@@ -279,6 +324,9 @@ class PlaybackController extends ChangeNotifier {
       final ids = prefs.getStringList('queue_ids') ?? const <String>[];
       final currentId = prefs.getString('current_track_id') ?? '';
       final posMs = prefs.getInt('position_ms') ?? 0;
+
+      _isShuffle = prefs.getBool('is_shuffle') ?? false;
+      _repeatMode = prefs.getInt('repeat_mode') ?? 0;
 
       if (ids.isNotEmpty) {
         final restored = <Track>[];
