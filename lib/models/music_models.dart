@@ -182,8 +182,8 @@ const List<Track> kStardustEchoesTracks = [
   Track(id: 'se3', title: 'Neon Cathedral', artist: 'Vesper', album: 'Stardust Echoes', duration: '5:22', dominantColor: Color(0xFF7C4DFF)),
 ];
 
-// Albums cannot be const because List<Track> fields are not const-compatible
-// with the Album class (which itself is non-const due to Color usage at runtime).
+// Albums use final (not const) because the track lists are mutable List<Track>,
+// not compile-time const lists, so the Album constructor cannot be evaluated at compile time.
 final Album kNeonHorizonAlbum = Album(
   id: 'a1',
   title: 'Neon Horizon',
@@ -212,8 +212,8 @@ final Artist kVesperArtist = Artist(
   dominantColor: const Color(0xFF7C4DFF),
   albums: [kNeonHorizonAlbum, kStardustEchoesAlbum],
   topTracks: [
-    Track(id: 'nh2', title: 'Prism Dreams', artist: 'Vesper', album: 'Neon Horizon', duration: '3:58', dominantColor: Color(0xFF7C4DFF)),
-    Track(id: 'nh1', title: 'Midnight Transmission', artist: 'Vesper', album: 'Neon Horizon', duration: '4:22', dominantColor: Color(0xFF9C5CFF)),
+    Track(id: 'nh2', title: 'Prism Dreams', artist: 'Vesper', album: 'Neon Horizon', duration: '3:58', dominantColor: Color(0xFF9C5CFF)),
+    Track(id: 'nh1', title: 'Midnight Transmission', artist: 'Vesper', album: 'Neon Horizon', duration: '4:22', dominantColor: Color(0xFF7C4DFF)),
     Track(id: 'se3', title: 'Neon Cathedral', artist: 'Vesper', album: 'Stardust Echoes', duration: '5:22', dominantColor: Color(0xFF6A3FC8)),
   ],
 );

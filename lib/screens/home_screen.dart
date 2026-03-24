@@ -44,6 +44,20 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
+// ─── Shared album navigation helper ──────────────────────────────────────────
+void _pushAlbum(BuildContext ctx, Album album) {
+  Navigator.of(ctx).push(PageRouteBuilder(
+    pageBuilder: (_, a1, a2) => AlbumDetailScreen(album: album),
+    transitionsBuilder: (_, anim, __, child) {
+      return SlideTransition(
+        position: Tween(begin: const Offset(1, 0), end: Offset.zero)
+            .animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+        child: child,
+      );
+    },
+  ));
+}
+
 // ─── Ambient glow background ─────────────────────────────────────────────────
 class _AmbientBackground extends StatelessWidget {
   @override
@@ -240,18 +254,7 @@ class _HeroSection extends StatelessWidget {
     ));
   }
 
-  void _openAlbum(BuildContext ctx) {
-    Navigator.of(ctx).push(PageRouteBuilder(
-      pageBuilder: (_, a1, a2) => AlbumDetailScreen(album: kNeonHorizonAlbum),
-      transitionsBuilder: (_, anim, __, child) {
-        return SlideTransition(
-          position: Tween(begin: const Offset(1, 0), end: Offset.zero)
-              .animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
-          child: child,
-        );
-      },
-    ));
-  }
+  void _openAlbum(BuildContext ctx) => _pushAlbum(ctx, kNeonHorizonAlbum);
 }
 
 // ─── Recent Plays ─────────────────────────────────────────────────────────────
@@ -585,18 +588,7 @@ class _NewReleasesSection extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       FilledButton(
-                        onPressed: () {
-                          Navigator.of(context).push(PageRouteBuilder(
-                            pageBuilder: (_, a1, a2) => AlbumDetailScreen(album: kNeonHorizonAlbum),
-                            transitionsBuilder: (_, anim, __, child) {
-                              return SlideTransition(
-                                position: Tween(begin: const Offset(1, 0), end: Offset.zero)
-                                    .animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
-                                child: child,
-                              );
-                            },
-                          ));
-                        },
+                        onPressed: () => _pushAlbum(context, kNeonHorizonAlbum),
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.primaryDim,
                           foregroundColor: AppColors.onPrimary,
@@ -627,18 +619,7 @@ class _NewReleaseRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(PageRouteBuilder(
-          pageBuilder: (_, a1, a2) => AlbumDetailScreen(album: kNeonHorizonAlbum),
-          transitionsBuilder: (_, anim, __, child) {
-            return SlideTransition(
-              position: Tween(begin: const Offset(1, 0), end: Offset.zero)
-                  .animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
-              child: child,
-            );
-          },
-        ));
-      },
+      onTap: () => _pushAlbum(context, kNeonHorizonAlbum),
       child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       child: Container(
