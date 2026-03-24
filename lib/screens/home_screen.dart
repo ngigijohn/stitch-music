@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../models/music_models.dart';
+import 'album_detail_screen.dart';
+import 'artist_detail_screen.dart';
 import 'now_playing_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -209,8 +211,8 @@ class _HeroSection extends StatelessWidget {
                           ),
                           const SizedBox(width: 12),
                           _GlassCircleButton(
-                            icon: Icons.add_rounded,
-                            onTap: () {},
+                            icon: Icons.album_rounded,
+                            onTap: () => _openAlbum(context),
                           ),
                         ],
                       ),
@@ -231,6 +233,19 @@ class _HeroSection extends StatelessWidget {
       transitionsBuilder: (_, anim, __, child) {
         return SlideTransition(
           position: Tween(begin: const Offset(0, 1), end: Offset.zero)
+              .animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+          child: child,
+        );
+      },
+    ));
+  }
+
+  void _openAlbum(BuildContext ctx) {
+    Navigator.of(ctx).push(PageRouteBuilder(
+      pageBuilder: (_, a1, a2) => AlbumDetailScreen(album: kNeonHorizonAlbum),
+      transitionsBuilder: (_, anim, __, child) {
+        return SlideTransition(
+          position: Tween(begin: const Offset(1, 0), end: Offset.zero)
               .animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
           child: child,
         );
@@ -570,7 +585,18 @@ class _NewReleasesSection extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       FilledButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.of(context).push(PageRouteBuilder(
+                            pageBuilder: (_, a1, a2) => AlbumDetailScreen(album: kNeonHorizonAlbum),
+                            transitionsBuilder: (_, anim, __, child) {
+                              return SlideTransition(
+                                position: Tween(begin: const Offset(1, 0), end: Offset.zero)
+                                    .animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+                                child: child,
+                              );
+                            },
+                          ));
+                        },
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.primaryDim,
                           foregroundColor: AppColors.onPrimary,
@@ -600,7 +626,20 @@ class _NewReleaseRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(PageRouteBuilder(
+          pageBuilder: (_, a1, a2) => AlbumDetailScreen(album: kNeonHorizonAlbum),
+          transitionsBuilder: (_, anim, __, child) {
+            return SlideTransition(
+              position: Tween(begin: const Offset(1, 0), end: Offset.zero)
+                  .animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+              child: child,
+            );
+          },
+        ));
+      },
+      child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       child: Container(
         decoration: BoxDecoration(
@@ -633,6 +672,7 @@ class _NewReleaseRow extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }

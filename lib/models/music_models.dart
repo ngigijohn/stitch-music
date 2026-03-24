@@ -123,3 +123,97 @@ const List<Mix> kDailyMixes = [
   Mix(id: 'm3', title: 'Classic Grooves', description: 'The foundation of soul, funk, and vintage jazz.', color: Color(0xFF6A3FC8)),
   Mix(id: 'm4', title: 'Chill Pulse', description: 'Soft beats and atmospheric pads for late nights.', color: Color(0xFF5E35B1)),
 ];
+
+// ─── Album & Artist models ────────────────────────────────────────────────────
+
+class Album {
+  final String id;
+  final String title;
+  final String artist;
+  final String year;
+  final String genre;
+  final Color dominantColor;
+  final List<Track> tracks;
+
+  const Album({
+    required this.id,
+    required this.title,
+    required this.artist,
+    required this.year,
+    required this.genre,
+    required this.dominantColor,
+    required this.tracks,
+  });
+}
+
+class Artist {
+  final String id;
+  final String name;
+  final String monthlyListeners;
+  final String bio;
+  final Color dominantColor;
+  final List<Album> albums;
+  final List<Track> topTracks;
+
+  const Artist({
+    required this.id,
+    required this.name,
+    required this.monthlyListeners,
+    required this.bio,
+    required this.dominantColor,
+    required this.albums,
+    required this.topTracks,
+  });
+}
+
+// ─── Sample album/artist data ─────────────────────────────────────────────────
+
+const List<Track> kNeonHorizonTracks = [
+  Track(id: 'nh1', title: 'Midnight Transmission', artist: 'Vesper', album: 'Neon Horizon', duration: '4:22', dominantColor: Color(0xFF7C4DFF)),
+  Track(id: 'nh2', title: 'Prism Dreams', artist: 'Vesper', album: 'Neon Horizon', duration: '3:58', dominantColor: Color(0xFF9C5CFF)),
+  Track(id: 'nh3', title: 'Static in the Rain', artist: 'Vesper', album: 'Neon Horizon', duration: '5:12', dominantColor: Color(0xFF6A3FC8)),
+  Track(id: 'nh4', title: 'Binary Sunset', artist: 'Vesper', album: 'Neon Horizon', duration: '4:05', dominantColor: Color(0xFF7C4DFF)),
+  Track(id: 'nh5', title: 'Cybernetic Heartbeat', artist: 'Vesper', album: 'Neon Horizon', duration: '3:47', dominantColor: Color(0xFF8B5CF6)),
+];
+
+const List<Track> kStardustEchoesTracks = [
+  Track(id: 'se1', title: 'Stardust Prelude', artist: 'Vesper', album: 'Stardust Echoes', duration: '3:30', dominantColor: Color(0xFF5E35B1)),
+  Track(id: 'se2', title: 'Void Walker', artist: 'Vesper', album: 'Stardust Echoes', duration: '4:10', dominantColor: Color(0xFF4C6EF5)),
+  Track(id: 'se3', title: 'Neon Cathedral', artist: 'Vesper', album: 'Stardust Echoes', duration: '5:22', dominantColor: Color(0xFF7C4DFF)),
+];
+
+// Albums cannot be const because List<Track> fields are not const-compatible
+// with the Album class (which itself is non-const due to Color usage at runtime).
+final Album kNeonHorizonAlbum = Album(
+  id: 'a1',
+  title: 'Neon Horizon',
+  artist: 'Vesper',
+  year: '2024',
+  genre: 'Synthwave, Dream-pop',
+  dominantColor: const Color(0xFF7C4DFF),
+  tracks: kNeonHorizonTracks,
+);
+
+final Album kStardustEchoesAlbum = Album(
+  id: 'a2',
+  title: 'Stardust Echoes',
+  artist: 'Vesper',
+  year: '2023',
+  genre: 'Ambient Electronic',
+  dominantColor: const Color(0xFF5E35B1),
+  tracks: kStardustEchoesTracks,
+);
+
+final Artist kVesperArtist = Artist(
+  id: 'ar1',
+  name: 'Vesper',
+  monthlyListeners: '3.4M',
+  bio: 'Emerging from the neon-lit streets of Berlin, Vesper has redefined the boundaries of atmospheric electronic music. Known for blending brutalist synth-lines with delicate, ethereal vocals, their soundscapes invite listeners into a cinematic world of sound.',
+  dominantColor: const Color(0xFF7C4DFF),
+  albums: [kNeonHorizonAlbum, kStardustEchoesAlbum],
+  topTracks: [
+    Track(id: 'nh2', title: 'Prism Dreams', artist: 'Vesper', album: 'Neon Horizon', duration: '3:58', dominantColor: Color(0xFF7C4DFF)),
+    Track(id: 'nh1', title: 'Midnight Transmission', artist: 'Vesper', album: 'Neon Horizon', duration: '4:22', dominantColor: Color(0xFF9C5CFF)),
+    Track(id: 'se3', title: 'Neon Cathedral', artist: 'Vesper', album: 'Stardust Echoes', duration: '5:22', dominantColor: Color(0xFF6A3FC8)),
+  ],
+);
